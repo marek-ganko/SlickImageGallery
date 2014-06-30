@@ -1,0 +1,41 @@
+/* Main */
+
+body {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #dddddd;
+    background-color: #000;
+}
+
+/* Header */
+
+body header {
+    background-color: #222;
+    background-image: -webkit-linear-gradient(top, #2c2c2c 0, #222 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.5%;
+    height: 50px;
+}
+
+/* Logo */
+
+#logo {
+    font-size: 120%;
+}
+
+.mediawiki {
+    color: #60889C;
+}
+
+.gr {
+    color: #BCFE3D;
+    font-size: 180%;
+}
+
+.bigI {
+    font-size: 150%;
+}
