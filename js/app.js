@@ -29,7 +29,7 @@
         getImages: function(done) {
             var self = this;
 
-            this.imageStream.getList.call(this, function(data) {
+            this.imageStream.getList(function(data) {
                 console.log('imageList', data);
 
                 self.imageHelper.createList(data, function() {
@@ -132,35 +132,34 @@
         }
     };
 
-    var MediaWikiClient = function() {
-        var options = {
-                limit: 200
-            },
-            url = 'http://en.wikipedia.org/w/api.php?action=query&format=json&callback=?',
-            queryParams = {
-                list: 'allimages',
-                aisort: 'name',
-                aiprop: 'url|size',
-                ailimit: options.limit
-            };
+    var MediaWikiClient = function() {};
+    MediaWikiClient.prototype = {
+        url: 'http://en.wikipedia.org/w/api.php?action=query&format=json&callback=?',
+        queryParams: {
+            list: 'allimages',
+            aisort: 'name',
+            aiprop: 'url|size',
+            ailimit: 200
+        },
 
-        this.getList = function(done) {
-            $.getJSON(buildQuery(url, queryParams), function(data) {
-                done(parseResults(data));
+        getList: function(done) {
+            var self = this;
+            $.getJSON(this.buildQuery(this.url, this.queryParams), function(data) {
+                done(self.parseResults(data));
             });
-        };
+        },
 
-        var buildQuery = function(url, params) {
+        buildQuery: function(url, params) {
             for (var name in params) {
                 url += '&' + name + '=' + encodeURIComponent(params[name]);
             }
             return url;
-        };
+        },
 
-        var parseResults = function(data) {
-            queryParams.aicontinue = data['query-continue'] && data['query-continue'].allimages.aicontinue || null;
+        parseResults: function(data) {
+            this.queryParams.aicontinue = data['query-continue'] && data['query-continue'].allimages.aicontinue || null;
             return data.query && data.query.allimages || [];
-        };
+        }
     };
 
     var gallery = new Gallery();
