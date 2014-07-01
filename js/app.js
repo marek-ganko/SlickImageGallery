@@ -13,7 +13,10 @@
         init: function() {
             var self = this;
             this.createContainer(function() {
-                this.getImages.call(this, function() {
+                this.getImages.call(this, function(err) {
+                    if (err) {
+                        return $('#message').html(err).show();
+                    }
                     self.container.appendChild(self.imageHelper.container);
                 });
             });
@@ -29,8 +32,10 @@
         getImages: function(done) {
             var self = this;
 
-            this.imageStream.getList(function(data) {
-                console.log('imageList', data);
+            this.imageStream.getList(function(err, data) {
+                if (err) {
+                    return done(err);
+                }
 
                 self.imageHelper.createList(data, function() {
                     console.log('list created', this);
@@ -49,6 +54,10 @@
         watched: [],
         unwatched: [],
         container: null,
+        size: {
+            width: 300,
+            height: 300
+        },
 
         init: function() {
             this.createContainer();
@@ -109,9 +118,9 @@
             var imageElement = document.createElement('img');
             imageElement.setAttribute('data-url', image.url);
             imageElement.setAttribute('data-source', image.descriptionurl);
-            imageElement.setAttribute('title', image.title);
-            imageElement.setAttribute('width', image.width);
-            imageElement.setAttribute('height', image.height);
+            imageElement.setAttribute('title', image.name);
+            imageElement.setAttribute('width', this.size.width);
+            imageElement.setAttribute('height', this.size.height);
 
             this.unwatched.push(imageElement);
 
@@ -132,20 +141,22 @@
         }
     };
 
-    var MediaWikiClient = function() {};
+    var MediaWikiClient = function() {
+    };
+
     MediaWikiClient.prototype = {
         url: 'http://en.wikipedia.org/w/api.php?action=query&format=json&callback=?',
         queryParams: {
             list: 'allimages',
             aisort: 'name',
-            aiprop: 'url|size',
+            aiprop: 'url|size|mediatype',
             ailimit: 200
         },
 
         getList: function(done) {
             var self = this;
             $.getJSON(this.buildQuery(this.url, this.queryParams), function(data) {
-                done(self.parseResults(data));
+                self.parseResults(data, done);
             });
         },
 
@@ -156,9 +167,33 @@
             return url;
         },
 
-        parseResults: function(data) {
+        parseResults: function(data, done) {
+            if (data.error && data.error.info) {
+                return done('Error from MediaWiki: <br>' + data.error.info);
+            }
+
             this.queryParams.aicontinue = data['query-continue'] && data['query-continue'].allimages.aicontinue || null;
-            return data.query && data.query.allimages || [];
+            var result = this.filterImages(data.query && data.query.allimages || []);
+
+            if (result.length < 1) {
+                done('No data recieved From MediaWiki');
+            }
+
+            done(null, result);
+        },
+
+        /**
+         * Filter images by its mediatype (MediaWiki give also audio files - miser mode is off)
+         * @param {Array} data
+         * @returns {Array}
+         */
+        filterImages: function(data) {
+            for(var i in data) {
+                if (data[i].mediatype != 'BITMAP') {
+                    data.splice(i, 1);
+                }
+            }
+            return data;
         }
     };
 
