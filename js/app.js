@@ -64,8 +64,6 @@
             window.addEventListener('resize', this.debounce(this.lazyLoad.bind(this), 10), false);
             document.addEventListener('scroll', this.debounce(this.lazyLoad.bind(this), 10), false);
             document.addEventListener('touchstart', this.debounce(this.lazyLoad.bind(this), 10), false);
-            document.addEventListener('touchmove', this.debounce(this.lazyLoad.bind(this), 10), false);
-            document.addEventListener('touchstop', this.debounce(this.lazyLoad.bind(this), 10), false);
         },
 
         debounce: function(fn, delay) {
@@ -90,6 +88,7 @@
         },
 
         show: function(image, done) {
+            // @TODO fix visibility calculations
             var screen = image.getBoundingClientRect();
             var visible = screen.top >= 0 && screen.left >= 0 && screen.top <= (window.innerHeight || document.documentElement.clientHeight);
             if (visible) {
@@ -141,7 +140,7 @@
             var link = document.createElement('a');
 
             link.onclick = function() {
-                // @TODO bind z preview on click
+                // @TODO bind preview on click
 
             };
 
@@ -165,6 +164,7 @@
 
         getList: function(done) {
             var self = this;
+            // @TODO add pagination with lazy loading for
             $.getJSON(this.buildQuery(this.url, this.queryParams), function(data) {
                 self.parseResults(data, done);
             });
