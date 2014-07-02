@@ -54,21 +54,29 @@
         watched: [],
         unwatched: [],
         container: null,
-        size: {
-            width: 300,
-            height: 300
-        },
+        blankImgUrl: 'img/_.gif',
 
         init: function() {
             this.createContainer();
         },
 
         listen: function() {
-            // @TODO handle swipe too
-            // @TODO add debounce
-            document.addEventListener('scroll', this.lazyLoad.bind(this), false);
-            window.addEventListener('load', this.lazyLoad.bind(this), false);
-            window.addEventListener('resize', this.lazyLoad.bind(this), false);
+            window.addEventListener('resize', this.debounce(this.lazyLoad.bind(this), 10), false);
+            document.addEventListener('scroll', this.debounce(this.lazyLoad.bind(this), 10), false);
+            document.addEventListener('touchstart', this.debounce(this.lazyLoad.bind(this), 10), false);
+            document.addEventListener('touchmove', this.debounce(this.lazyLoad.bind(this), 10), false);
+            document.addEventListener('touchstop', this.debounce(this.lazyLoad.bind(this), 10), false);
+        },
+
+        debounce: function(fn, delay) {
+            var timer = null;
+            return function() {
+                var self = this, args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function() {
+                    fn.apply(self, args);
+                }, delay);
+            };
         },
 
         lazyLoad: function() {
@@ -86,7 +94,7 @@
             var visible = screen.top >= 0 && screen.left >= 0 && screen.top <= (window.innerHeight || document.documentElement.clientHeight);
             if (visible) {
                 console.log('showImage', image);
-                image.src = image.getAttribute('data-url');
+                image.src = image.getAttribute('data-src');
                 done();
             }
         },
@@ -99,6 +107,7 @@
         appendContainer: function(partial, done) {
             this.container.appendChild(partial);
             document.body.appendChild(this.container);
+            this.lazyLoad();
             done();
         },
 
@@ -113,14 +122,12 @@
         create: function(image, container) {
             var activeElement = this.createPreviewLink(container);
 
-            // @TODO Add blank image on start
-            // @TODO normalize images sizes
+            // @TODO Add progress indicator on empty file
             var imageElement = document.createElement('img');
-            imageElement.setAttribute('data-url', image.url);
+            imageElement.setAttribute('src', this.blankImgUrl);
+            imageElement.setAttribute('data-src', image.url);
             imageElement.setAttribute('data-source', image.descriptionurl);
             imageElement.setAttribute('title', image.name);
-            imageElement.setAttribute('width', this.size.width);
-            imageElement.setAttribute('height', this.size.height);
 
             this.unwatched.push(imageElement);
 
@@ -129,6 +136,8 @@
         },
 
         createPreviewLink: function(container) {
+            var imageContainer = document.createElement('div');
+            imageContainer.setAttribute('class', 'imgContainer');
             var link = document.createElement('a');
 
             link.onclick = function() {
@@ -136,7 +145,8 @@
 
             };
 
-            container.appendChild(link);
+            imageContainer.appendChild(link);
+            container.appendChild(imageContainer);
             return link;
         }
     };
@@ -188,7 +198,7 @@
          * @returns {Array}
          */
         filterImages: function(data) {
-            for(var i in data) {
+            for (var i in data) {
                 if (data[i].mediatype != 'BITMAP') {
                     data.splice(i, 1);
                 }
