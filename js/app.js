@@ -17,6 +17,7 @@
         init: function() {
             var self = this;
             this.createContainer();
+
             $("html, body").scrollTop(0);
 
             this.getImages(function(err) {
@@ -24,7 +25,6 @@
                     return $('#message').html(err).show();
                 }
                 self.imageHelper.container;
-                self.container.appendChild(self.imageHelper.container);
                 self.lazyLoader.loadImage();
                 self.lazyLoader.listen();
             });
@@ -33,7 +33,18 @@
         createContainer: function() {
             this.container = document.createElement('div');
             this.container.id = 'Gallery';
+
+            // body #Gallery
             document.body.appendChild(this.container);
+
+            // #Gallery #Images
+            this.container.appendChild(this.imageHelper.container);
+
+            var bottomTrigger = document.createElement('div');
+            bottomTrigger.id = 'bottomTrigger';
+
+            // #Gallery #bottomTrigger
+            this.container.appendChild(bottomTrigger);
         },
 
         getImages: function(done) {
@@ -70,6 +81,7 @@
 
         createList: function(images, done) {
             for (var i in images) {
+                // #Images .imgContainer
                 this.container.appendChild(this.create(images[i], i));
             }
             done();
@@ -92,7 +104,9 @@
             imageElement.setAttribute('data-descriptionurl', image.descriptionurl);
             imageElement.setAttribute('title', image.name);
 
+            // a img
             link.appendChild(imageElement);
+            // .imgContainer a
             imageContainer.appendChild(link);
             return imageContainer;
         }
