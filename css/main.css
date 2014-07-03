@@ -11,7 +11,7 @@ body {
 
 /* Header */
 
-body header {
+#mainHeader {
     background-color: #222;
     position: fixed;
     top: 0;
@@ -49,17 +49,65 @@ body header {
     text-align: center;
 }
 
-#Gallery .imgContainer {
-    width: 20%;
+.imgContainer {
     padding: 10px;
     display: inline-block;
     text-align: center;
+}
+
+.blank {
+    background: #000 url(../img/loading.gif) no-repeat center center;
 }
 
 #Gallery img {
     width: 100%;
     max-height: 300px;
     vertical-align: middle;
+}
+
+/* Media specific styles */
+@media only screen
+and (min-width : 321px) {
+    .imgContainer {
+        width: 20%;
+        min-height: 70px;
+    }
+}
+
+@media only screen
+and (max-width : 320px) {
+    .imgContainer {
+        width: 25%;
+        min-height: 70px;
+    }
+}
+
+@media only screen
+and (min-device-width : 768px)
+and (max-device-width : 1024px)
+and (orientation : landscape) {
+    .imgContainer {
+        width: 18%;
+        min-height: 50px;
+    }
+}
+
+@media only screen
+and (min-device-width : 768px)
+and (max-device-width : 1024px)
+and (orientation : portrait) {
+    .imgContainer {
+        width: 22%;
+        min-height: 50px;
+    }
+}
+
+@media only screen
+and (min-width: 1224px) {
+    .imgContainer {
+        width: 17%;
+        min-height: 200px;
+    }
 }
 
 /* Message */

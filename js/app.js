@@ -4,29 +4,36 @@
     var Gallery = function() {
         this.imageStream = new MediaWikiClient();
         this.imageHelper = new Images();
+        this.lazyLoader = new LazyLoader();
         this.init();
     };
 
     Gallery.prototype = {
         container: null,
+        imageStream: null,
+        imageHelper: null,
+        lazyLoader: null,
 
         init: function() {
             var self = this;
-            this.createContainer(function() {
-                this.getImages.call(this, function(err) {
-                    if (err) {
-                        return $('#message').html(err).show();
-                    }
-                    self.container.appendChild(self.imageHelper.container);
-                });
+            this.createContainer();
+            $("html, body").scrollTop(0);
+
+            this.getImages(function(err) {
+                if (err) {
+                    return $('#message').html(err).show();
+                }
+                self.imageHelper.container;
+                self.container.appendChild(self.imageHelper.container);
+                self.lazyLoader.loadImage();
+                self.lazyLoader.listen();
             });
         },
 
-        createContainer: function(done) {
+        createContainer: function() {
             this.container = document.createElement('div');
             this.container.id = 'Gallery';
             document.body.appendChild(this.container);
-            done.call(this);
         },
 
         getImages: function(done) {
@@ -38,7 +45,6 @@
                 }
 
                 self.imageHelper.createList(data, function() {
-                    console.log('list created', this);
                     done();
                 });
             });
@@ -47,12 +53,9 @@
 
     var Images = function() {
         this.init();
-        this.listen();
     };
 
     Images.prototype = {
-        watched: [],
-        unwatched: [],
         container: null,
         blankImgUrl: 'img/_.gif',
 
@@ -60,93 +63,40 @@
             this.createContainer();
         },
 
-        listen: function() {
-            window.addEventListener('resize', this.debounce(this.lazyLoad.bind(this), 10), false);
-            document.addEventListener('scroll', this.debounce(this.lazyLoad.bind(this), 10), false);
-            document.addEventListener('touchstart', this.debounce(this.lazyLoad.bind(this), 10), false);
-        },
-
-        debounce: function(fn, delay) {
-            var timer = null;
-            return function() {
-                var self = this, args = arguments;
-                clearTimeout(timer);
-                timer = setTimeout(function() {
-                    fn.apply(self, args);
-                }, delay);
-            };
-        },
-
-        lazyLoad: function() {
-            var self = this;
-            for (var i in this.unwatched) {
-                this.show(this.unwatched[i], function() {
-                    self.watched.push(self.unwatched[i]);
-                    self.unwatched.splice(i, 1);
-                });
-            }
-        },
-
-        show: function(image, done) {
-            // @TODO fix visibility calculations
-            var screen = image.getBoundingClientRect();
-            var visible = screen.top >= 0 && screen.left >= 0 && screen.top <= (window.innerHeight || document.documentElement.clientHeight);
-            if (visible) {
-                console.log('showImage', image);
-                image.src = image.getAttribute('data-src');
-                done();
-            }
-        },
-
         createContainer: function() {
             this.container = document.createElement('div');
             this.container.id = 'Images';
         },
 
-        appendContainer: function(partial, done) {
-            this.container.appendChild(partial);
-            document.body.appendChild(this.container);
-            this.lazyLoad();
+        createList: function(images, done) {
+            for (var i in images) {
+                this.container.appendChild(this.create(images[i], i));
+            }
             done();
         },
 
-        createList: function(images, done) {
-            var partial = document.createElement('span');
-            for (var i in images) {
-                partial = this.create(images[i], partial);
-            }
-            this.appendContainer(partial, done);
-        },
-
-        create: function(image, container) {
-            var activeElement = this.createPreviewLink(container);
-
-            // @TODO Add progress indicator on empty file
-            var imageElement = document.createElement('img');
-            imageElement.setAttribute('src', this.blankImgUrl);
-            imageElement.setAttribute('data-src', image.url);
-            imageElement.setAttribute('data-source', image.descriptionurl);
-            imageElement.setAttribute('title', image.name);
-
-            this.unwatched.push(imageElement);
-
-            activeElement.appendChild(imageElement);
-            return container;
-        },
-
-        createPreviewLink: function(container) {
+        create: function(image, i) {
             var imageContainer = document.createElement('div');
             imageContainer.setAttribute('class', 'imgContainer');
-            var link = document.createElement('a');
 
+
+            var link = document.createElement('a');
             link.onclick = function() {
                 // @TODO bind preview on click
 
             };
 
+            var imageElement = document.createElement('img');
+            imageElement.setAttribute('src', this.blankImgUrl);
+            imageElement.setAttribute('data-src', image.url);
+            imageElement.setAttribute('data-descriptionurl', image.descriptionurl);
+            imageElement.setAttribute('title', image.name);
+            imageElement.setAttribute('id', 'a' + i);
+            $(imageContainer).addClass('blank');
+
+            link.appendChild(imageElement);
             imageContainer.appendChild(link);
-            container.appendChild(imageContainer);
-            return link;
+            return imageContainer;
         }
     };
 
@@ -158,13 +108,13 @@
         queryParams: {
             list: 'allimages',
             aisort: 'name',
-            aiprop: 'url|size|mediatype',
+            aiprop: 'url|mediatype',
             ailimit: 200
         },
 
         getList: function(done) {
             var self = this;
-            // @TODO add pagination with lazy loading for
+            // @TODO add pagination with lazy loading
             $.getJSON(this.buildQuery(this.url, this.queryParams), function(data) {
                 self.parseResults(data, done);
             });
@@ -204,6 +154,52 @@
                 }
             }
             return data;
+        }
+    };
+
+    var LazyLoader = function() {
+    };
+
+    LazyLoader.prototype = {
+        threshold: 1000,
+
+        listen: function() {
+            window.addEventListener('resize', this.debounce(this.loadImage.bind(this), 10), false);
+            document.addEventListener('scroll', this.debounce(this.loadImage.bind(this), 10), false);
+            document.addEventListener('touchstart', this.debounce(this.loadImage.bind(this), 10), false);
+        },
+
+        debounce: function(fn, delay) {
+            var timer = null;
+            return function() {
+                var self = this,
+                    args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function() {
+                    fn.apply(self, args);
+                }, delay);
+            };
+        },
+
+        loadImage: function() {
+            var unwatched = document.querySelectorAll('img[data-src]');
+            for (var i = 0; i < unwatched.length; i++) {
+                this.checkViewoport(unwatched[i].parentNode.parentNode, this.threshold, function() {
+                    unwatched[i].src = unwatched[i].getAttribute('data-src');
+                    unwatched[i].removeAttribute('data-src');
+                    $(unwatched[i].parentNode.parentNode).removeClass('blank');
+                    console.log('Loading image... ' + unwatched[i].src);
+                }, i);
+            }
+        },
+
+        checkViewoport: function(element, threshold, done) {
+            var viewport = document.documentElement.getBoundingClientRect(),
+                elementOffset = element.getBoundingClientRect(),
+                screenHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
+                vieportTop = (viewport.top * (-1));
+
+            return elementOffset.top + vieportTop > screenHeight + vieportTop + threshold || done();
         }
     };
 
