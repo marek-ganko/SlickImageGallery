@@ -77,7 +77,7 @@
 
         create: function(image, i) {
             var imageContainer = document.createElement('div');
-            imageContainer.setAttribute('class', 'imgContainer');
+            imageContainer.setAttribute('class', 'imgContainer blank');
 
 
             var link = document.createElement('a');
@@ -91,8 +91,6 @@
             imageElement.setAttribute('data-src', image.url);
             imageElement.setAttribute('data-descriptionurl', image.descriptionurl);
             imageElement.setAttribute('title', image.name);
-            imageElement.setAttribute('id', 'a' + i);
-            $(imageContainer).addClass('blank');
 
             link.appendChild(imageElement);
             imageContainer.appendChild(link);
@@ -109,7 +107,7 @@
             list: 'allimages',
             aisort: 'name',
             aiprop: 'url|mediatype',
-            ailimit: 200
+            ailimit: 500
         },
 
         getList: function(done) {
@@ -182,12 +180,12 @@
         },
 
         loadImage: function() {
+            // @TODO add error handling
             var unwatched = document.querySelectorAll('img[data-src]');
             for (var i = 0; i < unwatched.length; i++) {
                 this.checkViewoport(unwatched[i].parentNode.parentNode, this.threshold, function() {
                     unwatched[i].src = unwatched[i].getAttribute('data-src');
                     unwatched[i].removeAttribute('data-src');
-                    $(unwatched[i].parentNode.parentNode).removeClass('blank');
                     console.log('Loading image... ' + unwatched[i].src);
                 }, i);
             }
