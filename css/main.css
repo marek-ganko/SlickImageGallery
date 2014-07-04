@@ -119,4 +119,5 @@ and (min-width: 1224px) {
     position: fixed;
     top: 50%;
     text-align: center;
+    background: #000;
 }

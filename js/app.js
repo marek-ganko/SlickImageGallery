@@ -129,7 +129,8 @@
         url: 'http://en.wikipedia.org/w/api.php?action=query&format=json&callback=?',
         queryParams: {
             list: 'allimages',
-            aisort: 'name',
+            aisort: 'timestamp',
+            aidir: 'descending',
             aiprop: 'url|mediatype',
             ailimit: 100
         },
@@ -154,7 +155,7 @@
                 return done('Error from MediaWiki: <br>' + data.error.info);
             }
 
-            this.queryParams.aicontinue = data['query-continue'] && data['query-continue'].allimages.aicontinue || null;
+            this.queryParams.aicontinue = data['query-continue'] && data['query-continue'].allimages.aicontinue || '';
             var result = this.filterImages(data.query && data.query.allimages || []);
 
             if (result.length < 1) {
@@ -172,7 +173,7 @@
         filterImages: function(data) {
             for (var i in data) {
                 if (data[i].mediatype != 'BITMAP') {
-                    data.splice(i, 1);
+                    delete data[i];
                 }
             }
             return data;
