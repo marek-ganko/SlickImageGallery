@@ -10,23 +10,28 @@
 
     Gallery.prototype = {
         container: null,
+        bottomTriggerElement: null,
         imageStream: null,
         imageHelper: null,
         lazyLoader: null,
 
         init: function() {
-            var self = this;
+            var self = this,
+                lazyLoaderCalled = false;
             this.createContainer();
 
             $("html, body").scrollTop(0);
+
+            var called = false;
 
             this.getImages(function(err) {
                 if (err) {
                     return $('#message').html(err).show();
                 }
-                self.imageHelper.container;
-                self.lazyLoader.loadImage();
-                self.lazyLoader.listen();
+                if (!lazyLoaderCalled){
+                    self.lazyLoader.listenForImages();
+                    lazyLoaderCalled = true;
+                }
             });
         },
 
@@ -40,25 +45,30 @@
             // #Gallery #Images
             this.container.appendChild(this.imageHelper.container);
 
-            var bottomTrigger = document.createElement('div');
-            bottomTrigger.id = 'bottomTrigger';
+            this.bottomTriggerElement = document.createElement('div');
+            this.bottomTriggerElement.id = 'bottomTrigger';
 
             // #Gallery #bottomTrigger
-            this.container.appendChild(bottomTrigger);
+            this.container.appendChild(this.bottomTriggerElement);
         },
 
         getImages: function(done) {
             var self = this;
 
-            this.imageStream.getList(function(err, data) {
-                if (err) {
-                    return done(err);
-                }
+            this.lazyLoader.listenForContent(
+                this.bottomTriggerElement,
+                function() {
+                    self.imageStream.getList(function(err, data) {
+                        if (err) {
+                            return done(err);
+                        }
 
-                self.imageHelper.createList(data, function() {
-                    done();
-                });
-            });
+                        self.imageHelper.createList(data, function() {
+                            done();
+                        });
+                    })
+                }
+            );
         }
     };
 
@@ -121,12 +131,12 @@
             list: 'allimages',
             aisort: 'name',
             aiprop: 'url|mediatype',
-            ailimit: 500
+            ailimit: 100
         },
 
         getList: function(done) {
             var self = this;
-            // @TODO add pagination with lazy loading
+            console.log('Loading page... ' + (this.queryParams.aicontinue || 'first'));
             $.getJSON(this.buildQuery(this.url, this.queryParams), function(data) {
                 self.parseResults(data, done);
             });
@@ -173,12 +183,23 @@
     };
 
     LazyLoader.prototype = {
-        threshold: 1000,
+        imagesThreshold: 2000,
+        contentThreshold: 4000,
 
-        listen: function() {
+        listenForImages: function() {
             window.addEventListener('resize', this.debounce(this.loadImage.bind(this), 10), false);
             document.addEventListener('scroll', this.debounce(this.loadImage.bind(this), 10), false);
             document.addEventListener('touchstart', this.debounce(this.loadImage.bind(this), 10), false);
+
+            this.loadImage.call(this);
+        },
+
+        listenForContent: function(triggerElement, done) {
+            window.addEventListener('resize', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
+            document.addEventListener('scroll', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
+            document.addEventListener('touchstart', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
+
+            this.loadContent.call(this, triggerElement, done);
         },
 
         debounce: function(fn, delay) {
@@ -197,12 +218,17 @@
             // @TODO add error handling
             var unwatched = document.querySelectorAll('img[data-src]');
             for (var i = 0; i < unwatched.length; i++) {
-                this.checkViewoport(unwatched[i].parentNode.parentNode, this.threshold, function() {
+                this.checkViewoport(unwatched[i].parentNode.parentNode, this.imagesThreshold, function() {
                     unwatched[i].src = unwatched[i].getAttribute('data-src');
                     unwatched[i].removeAttribute('data-src');
+                    $(unwatched[i].parentNode.parentNode).removeClass('blank');
                     console.log('Loading image... ' + unwatched[i].src);
-                }, i);
+                });
             }
+        },
+
+        loadContent: function(element, done) {
+            this.checkViewoport(element, this.contentThreshold, done);
         },
 
         checkViewoport: function(element, threshold, done) {
