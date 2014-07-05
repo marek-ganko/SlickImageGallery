@@ -1,6 +1,24 @@
-(function(window, document, $) {
+(function(screen, window, document, $) {
     "use strict";
 
+    /**
+     * Show error message
+     * @param {String} message
+     * @constructor
+     */
+    var ErrorMessage = function(message) {
+        var messageElement = document.getElementById('Message'),
+            galleryElement = document.getElementById('Gallery');
+
+        messageElement.innerHTML = message;
+        messageElement.style.display = 'block';
+        galleryElement.style.display = 'none';
+    };
+
+    /**
+     * Gallery - main initiating object
+     * @constructor
+     */
     var Gallery = function() {
         var self = this;
         this.imageHelper = new Images();
@@ -9,7 +27,6 @@
             self.init();
         });
     };
-
     Gallery.prototype = {
         container: null,
         bottomTriggerElement: null,
@@ -22,34 +39,30 @@
                 lazyLoaderCalled = false;
             this.createContainer();
 
-            $("html, body").scrollTop(0);
-
             this.getImages(function(err) {
                 if (err) {
-                    return $('#message').html(err).show();
+                    return new ErrorMessage(err);
                 }
                 if (!lazyLoaderCalled){
                     self.lazyLoader.listenForImages();
                     lazyLoaderCalled = true;
                 }
+                self.lazyLoader.loadThumbnail.call(self.lazyLoader);
             });
         },
 
         createContainer: function() {
             this.container = document.createElement('div');
-            this.container.id = 'Gallery';
-
-            // body #Gallery
-            document.body.appendChild(this.container);
+            this.container.setAttribute('id', 'Gallery');
+            this.bottomTriggerElement = document.createElement('div');
+            this.bottomTriggerElement.setAttribute('id', 'bottomTrigger');
 
             // #Gallery #Images
             this.container.appendChild(this.imageHelper.container);
-
-            this.bottomTriggerElement = document.createElement('div');
-            this.bottomTriggerElement.id = 'bottomTrigger';
-
             // #Gallery #bottomTrigger
             this.container.appendChild(this.bottomTriggerElement);
+            // body #Gallery
+            document.body.appendChild(this.container);
         },
 
         getImages: function(done) {
@@ -72,12 +85,18 @@
         }
     };
 
+    /**
+     * Images handling
+     * @constructor
+     */
     var Images = function() {
+        this.preview = new Preview();
         this.init();
     };
-
     Images.prototype = {
         container: null,
+        preview: null,
+        list: [],
 
         init: function() {
             this.createContainer();
@@ -85,18 +104,20 @@
 
         createContainer: function() {
             this.container = document.createElement('div');
-            this.container.id = 'Images';
+            this.container.setAttribute('id', 'Images');
+            // #Images #Preview
+            this.container.appendChild(this.preview.container);
         },
 
         createList: function(images, done) {
             for (var i in images) {
                 // #Images .imgContainer
-                this.container.appendChild(this.create(images[i], i));
+                this.container.appendChild(this.create(images[i]));
             }
             done();
         },
 
-        create: function(image, i) {
+        create: function(image) {
             var imageContainer = document.createElement('div'),
                 link = document.createElement('a'),
                 imageElement = new Image(),
@@ -104,17 +125,17 @@
 
             imageContainer.setAttribute('class', 'imgContainer blank');
 
-            link.setAttribute('href', '#');
+            link.setAttribute('href', image.url);
+            link.setAttribute('title', image.name);
 
-            imageElement.setAttribute('data-thumb', image.thumb);
-            imageElement.setAttribute('data-src', image.src);
-            imageElement.setAttribute('data-descriptionurl', image.descriptionurl);
-            imageElement.setAttribute('title', image.name);
+            imageElement.setAttribute('data-thumb', image.url);
+            imageElement.setAttribute('alt', image.name);
+
+            this.list.push(imageElement);
 
             link.onclick = function(e) {
                 e.preventDefault();
-                // @TODO bind preview on click
-                self.showPreview(imageElement);
+                self.preview.show.call(self.preview, imageElement, image);
             };
 
             // a img
@@ -122,17 +143,94 @@
             // .imgContainer a
             imageContainer.appendChild(link);
             return imageContainer;
-        },
-
-        showPreview: function(image) {
-            console.log(image);
         }
     };
 
+    /**
+     * Image Preview handling
+     * @constructor
+     */
+    var Preview = function() {
+        this.init();
+        this.listen();
+    };
+    Preview.prototype = {
+        container: null,
+        itemsContainer: null,
+
+        init: function() {
+            this.createContainer();
+        },
+
+        listen: function() {
+            var self = this;
+
+            // close on ESC
+            window.addEventListener('keyup', function(e) {
+                if (e.keyCode == 27) {
+                    self.hide();
+                }
+            }, false);
+        },
+
+        createContainer: function() {
+            var self = this,
+                closePreview = document.createElement('div');
+
+            this.itemsContainer = document.createElement('div');
+            this.itemsContainer.setAttribute('id', 'previewItems');
+            closePreview.setAttribute('id', 'closePreview');
+            closePreview.onclick = function() {
+                self.hide();
+            };
+
+            this.container = document.createElement('div');
+            this.container.setAttribute('id', 'Preview');
+            // #Preview #closePreview
+            this.container.appendChild(closePreview);
+            // #Preview #previewItems
+            this.container.appendChild(this.itemsContainer);
+        },
+
+        hide: function() {
+            this.container.style.display = 'none';
+        },
+
+        show: function(imageEl, imageObj) {
+            var self = this,
+                figureElement = document.createElement('figure'),
+                figcaptionElement = document.createElement('figcaption'),
+                imageElement = new Image();
+
+            this.itemsContainer.innerHTML = '';
+            figcaptionElement.appendChild(document.createTextNode(imageObj.name));
+
+            // figure img
+            figureElement.appendChild(imageElement);
+            // figure figcaption
+            figureElement.appendChild(figcaptionElement);
+            // #Preview figure
+            this.itemsContainer.appendChild(figureElement);
+
+            imageElement.onload = function() {
+//                this.removeAttribute('class');
+            };
+
+            console.log(imageEl, imageObj);
+
+            imageElement.setAttribute('src', imageObj.url);
+            this.container.style.display = 'block';
+        }
+    };
+
+    /**
+     *
+     * @param {*} done
+     * @constructor
+     */
     var MediaWikiClient = function(done) {
         this.init(done);
     };
-
     MediaWikiClient.prototype = {
         url: 'http://en.wikipedia.org/w/api.php?action=query&format=json&callback=?',
         queryParams: {
@@ -140,7 +238,7 @@
             aisort: 'timestamp',
             aidir: 'descending',
             aiprop: 'url|mediatype|mime|size',
-            ailimit: 100
+            ailimit: 200
         },
         maxThumbWidth: 300,
         maxPreviewWidth: screen.width,
@@ -203,8 +301,11 @@
                     delete data[i];
                     continue;
                 }
+                image.url = image.url.replace('?', '%3F');
                 image.thumb = this.shrinkImage(image, this.maxThumbWidth, 400);
+                image.url = this.shrinkImage(image, this.maxPreviewWidth, 400);
             }
+
             return data.filter(function(value){
                 return value;
             });
@@ -217,19 +318,20 @@
         }
     };
 
+    /**
+     * Handling lazy loading for images
+     * @constructor
+     */
     var LazyLoader = function() {
     };
-
     LazyLoader.prototype = {
         imagesThreshold: 2000,
-        contentThreshold: 4000,
+        contentThreshold: 10000,
 
         listenForImages: function() {
             window.addEventListener('resize', this.debounce(this.loadThumbnail.bind(this), 10), false);
             document.addEventListener('scroll', this.debounce(this.loadThumbnail.bind(this), 10), false);
             document.addEventListener('touchstart', this.debounce(this.loadThumbnail.bind(this), 10), false);
-
-            this.loadThumbnail.call(this);
         },
 
         listenForContent: function(triggerElement, done) {
@@ -237,7 +339,7 @@
             document.addEventListener('scroll', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
             document.addEventListener('touchstart', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
 
-            this.loadContent.call(this, triggerElement, done);
+            this.loadContent(triggerElement, done);
         },
 
         debounce: function(fn, delay) {
@@ -258,12 +360,14 @@
                 if (unwatched[i].parentNode && unwatched[i].parentNode.parentNode) {
                     this.checkViewoport(unwatched[i].parentNode.parentNode, this.imagesThreshold, function(imageContainer) {
                         var image = imageContainer.firstChild.firstChild;
-
-                        image.onload = function(){
-                            // @TODO change from jquery to regexp
-                            $(imageContainer).removeClass('blank');
+                        image.onload = function() {
+                            imageContainer.setAttribute('class', imageContainer.getAttribute('class').replace('blank', '').trim());
                         };
-                        image.src = image.getAttribute('data-thumb');
+                        image.onerror = function() {
+                            imageContainer.innerHTML = '';
+                            imageContainer.setAttribute('class', imageContainer.getAttribute('class').replace('blank', 'broken'));
+                        };
+                        image.setAttribute('src', image.getAttribute('data-thumb'));
                         image.removeAttribute('data-thumb');
                     });
                 }
@@ -286,4 +390,4 @@
 
     var gallery = new Gallery();
 
-})(window, document, jQuery);
+})(screen, window, document, jQuery);
