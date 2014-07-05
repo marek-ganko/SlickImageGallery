@@ -2,10 +2,12 @@
     "use strict";
 
     var Gallery = function() {
-        this.imageStream = new MediaWikiClient();
+        var self = this;
         this.imageHelper = new Images();
         this.lazyLoader = new LazyLoader();
-        this.init();
+        this.imageStream = new MediaWikiClient(function(){
+            self.init();
+        });
     };
 
     Gallery.prototype = {
@@ -21,8 +23,6 @@
             this.createContainer();
 
             $("html, body").scrollTop(0);
-
-            var called = false;
 
             this.getImages(function(err) {
                 if (err) {
@@ -78,7 +78,6 @@
 
     Images.prototype = {
         container: null,
-        blankImgUrl: 'img/_.gif',
 
         init: function() {
             this.createContainer();
@@ -108,9 +107,9 @@
 
             };
 
-            var imageElement = document.createElement('img');
-            imageElement.setAttribute('src', this.blankImgUrl);
-            imageElement.setAttribute('data-src', image.url);
+            var imageElement = new Image();
+            imageElement.setAttribute('data-thumb', image.thumb);
+            imageElement.setAttribute('data-src', image.src);
             imageElement.setAttribute('data-descriptionurl', image.descriptionurl);
             imageElement.setAttribute('title', image.name);
 
@@ -122,7 +121,8 @@
         }
     };
 
-    var MediaWikiClient = function() {
+    var MediaWikiClient = function(done) {
+        this.init(done);
     };
 
     MediaWikiClient.prototype = {
@@ -131,8 +131,21 @@
             list: 'allimages',
             aisort: 'timestamp',
             aidir: 'descending',
-            aiprop: 'url|mediatype',
+            aiprop: 'url|mediatype|mime|size',
             ailimit: 100
+        },
+        maxThumbWidth: 300,
+        maxPreviewWidth: screen.width,
+        thumbUrl: '',
+        rootUrl: '',
+
+        init: function(done) {
+            var self = this;
+            $.getJSON(this.buildQuery(this.url, {meta: 'filerepoinfo', friprop: 'thumbUrl|rootUrl'}), function(data) {
+                self.thumbUrl = data.query && data.query.repos && data.query.repos[1] && data.query.repos[1].thumbUrl || '';
+                self.rootUrl = data.query && data.query.repos && data.query.repos[1] && data.query.repos[1].rootUrl || '';
+                done();
+            });
         },
 
         getList: function(done) {
@@ -172,11 +185,28 @@
          */
         filterImages: function(data) {
             for (var i in data) {
-                if (data[i].mediatype != 'BITMAP') {
+                var image = data[i];
+                if (
+                    // MediaWiki adds ogg to allimages
+                    image.mediatype != 'BITMAP' ||
+
+                    // remove unsupported tif image
+                    image.mime == 'image/tiff'
+                    ) {
                     delete data[i];
+                    continue;
                 }
+                image.thumb = this.shrinkImage(image, this.maxThumbWidth, 400);
             }
-            return data;
+            return data.filter(function(value){
+                return value;
+            });
+        },
+
+        shrinkImage: function(image, maxWidth, decreaseBoundary) {
+            return image.width - decreaseBoundary < maxWidth ?
+                image.url :
+                image.url.replace(this.rootUrl, this.thumbUrl) + '/' + maxWidth + 'px-' + image.name;
         }
     };
 
@@ -188,11 +218,11 @@
         contentThreshold: 4000,
 
         listenForImages: function() {
-            window.addEventListener('resize', this.debounce(this.loadImage.bind(this), 10), false);
-            document.addEventListener('scroll', this.debounce(this.loadImage.bind(this), 10), false);
-            document.addEventListener('touchstart', this.debounce(this.loadImage.bind(this), 10), false);
+            window.addEventListener('resize', this.debounce(this.loadThumbnail.bind(this), 10), false);
+            document.addEventListener('scroll', this.debounce(this.loadThumbnail.bind(this), 10), false);
+            document.addEventListener('touchstart', this.debounce(this.loadThumbnail.bind(this), 10), false);
 
-            this.loadImage.call(this);
+            this.loadThumbnail.call(this);
         },
 
         listenForContent: function(triggerElement, done) {
@@ -215,16 +245,21 @@
             };
         },
 
-        loadImage: function() {
-            // @TODO add error handling
-            var unwatched = document.querySelectorAll('img[data-src]');
-            for (var i = 0; i < unwatched.length; i++) {
-                this.checkViewoport(unwatched[i].parentNode.parentNode, this.imagesThreshold, function() {
-                    unwatched[i].src = unwatched[i].getAttribute('data-src');
-                    unwatched[i].removeAttribute('data-src');
-                    $(unwatched[i].parentNode.parentNode).removeClass('blank');
-                    console.log('Loading image... ' + unwatched[i].src);
-                });
+        loadThumbnail: function() {
+            var unwatched = document.querySelectorAll('img[data-thumb]');
+            for (var i in unwatched) {
+                if (unwatched[i].parentNode && unwatched[i].parentNode.parentNode) {
+                    this.checkViewoport(unwatched[i].parentNode.parentNode, this.imagesThreshold, function() {
+                        console.log('Loading image... ' + unwatched[i].src);
+                        unwatched[i].onload = function(){
+                            // @TODO change from jquery to regexp
+                            $(this.parentNode.parentNode).removeClass('blank');
+                        };
+                        unwatched[i].src = unwatched[i].getAttribute('data-thumb');
+                        unwatched[i].removeAttribute('data-thumb');
+                        delete unwatched[i];
+                    });
+                }
             }
         },
 
