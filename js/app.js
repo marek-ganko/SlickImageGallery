@@ -194,6 +194,7 @@
 
         hide: function() {
             this.container.style.display = 'none';
+            this.toggleScroll(false);
         },
 
         show: function(imageEl, imageObj) {
@@ -201,6 +202,8 @@
                 figureElement = document.createElement('figure'),
                 figcaptionElement = document.createElement('figcaption'),
                 imageElement = new Image();
+
+            this.toggleScroll(false);
 
             this.itemsContainer.innerHTML = '';
             figcaptionElement.appendChild(document.createTextNode(imageObj.name));
@@ -220,6 +223,10 @@
 
             imageElement.setAttribute('src', imageObj.url);
             this.container.style.display = 'block';
+        },
+
+        toggleScroll: function(on) {
+            document.body.style.overflow = on ? '' : 'hidden';
         }
     };
 
