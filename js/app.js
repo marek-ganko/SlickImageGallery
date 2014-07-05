@@ -194,7 +194,7 @@
 
         hide: function() {
             this.container.style.display = 'none';
-            this.toggleScroll(false);
+            this.toggleScroll(true);
         },
 
         show: function(imageEl, imageObj) {
