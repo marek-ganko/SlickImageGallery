@@ -126,3 +126,11 @@ and (min-width: 1224px) {
     text-align: center;
     background: #000;
 }
+
+#bottomTrigger {
+    width: 80px;
+    height: 10px;
+    margin: 0 auto;
+    padding: 50px;
+    background: #000 url(../img/contentLoading.gif) no-repeat center;
+}
