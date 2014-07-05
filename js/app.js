@@ -97,27 +97,35 @@
         },
 
         create: function(image, i) {
-            var imageContainer = document.createElement('div');
+            var imageContainer = document.createElement('div'),
+                link = document.createElement('a'),
+                imageElement = new Image(),
+                self = this;
+
             imageContainer.setAttribute('class', 'imgContainer blank');
 
+            link.setAttribute('href', '#');
 
-            var link = document.createElement('a');
-            link.onclick = function() {
-                // @TODO bind preview on click
-
-            };
-
-            var imageElement = new Image();
             imageElement.setAttribute('data-thumb', image.thumb);
             imageElement.setAttribute('data-src', image.src);
             imageElement.setAttribute('data-descriptionurl', image.descriptionurl);
             imageElement.setAttribute('title', image.name);
+
+            link.onclick = function(e) {
+                e.preventDefault();
+                // @TODO bind preview on click
+                self.showPreview(imageElement);
+            };
 
             // a img
             link.appendChild(imageElement);
             // .imgContainer a
             imageContainer.appendChild(link);
             return imageContainer;
+        },
+
+        showPreview: function(image) {
+            console.log(image);
         }
     };
 
@@ -150,7 +158,6 @@
 
         getList: function(done) {
             var self = this;
-            console.log('Loading page... ' + (this.queryParams.aicontinue || 'first'));
             $.getJSON(this.buildQuery(this.url, this.queryParams), function(data) {
                 self.parseResults(data, done);
             });
@@ -249,15 +256,15 @@
             var unwatched = document.querySelectorAll('img[data-thumb]');
             for (var i in unwatched) {
                 if (unwatched[i].parentNode && unwatched[i].parentNode.parentNode) {
-                    this.checkViewoport(unwatched[i].parentNode.parentNode, this.imagesThreshold, function() {
-                        console.log('Loading image... ' + unwatched[i].src);
-                        unwatched[i].onload = function(){
+                    this.checkViewoport(unwatched[i].parentNode.parentNode, this.imagesThreshold, function(imageContainer) {
+                        var image = imageContainer.firstChild.firstChild;
+
+                        image.onload = function(){
                             // @TODO change from jquery to regexp
-                            $(this.parentNode.parentNode).removeClass('blank');
+                            $(imageContainer).removeClass('blank');
                         };
-                        unwatched[i].src = unwatched[i].getAttribute('data-thumb');
-                        unwatched[i].removeAttribute('data-thumb');
-                        delete unwatched[i];
+                        image.src = image.getAttribute('data-thumb');
+                        image.removeAttribute('data-thumb');
                     });
                 }
             }
@@ -273,7 +280,7 @@
                 screenHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
                 vieportTop = (viewport.top * (-1));
 
-            return elementOffset.top + vieportTop > screenHeight + vieportTop + threshold || done();
+            return elementOffset.top + vieportTop > screenHeight + vieportTop + threshold || done(element);
         }
     };
 
