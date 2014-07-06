@@ -121,21 +121,26 @@
             var imageContainer = document.createElement('div'),
                 link = document.createElement('a'),
                 imageElement = new Image(),
-                self = this;
+                self = this,
+                size = image.width + ' x ' + image.height + ' (' + this.bytesToSize(image.size) + ')';
 
             imageContainer.setAttribute('class', 'imgContainer blank');
 
-            link.setAttribute('href', image.url);
-            link.setAttribute('title', image.name);
+            link.setAttribute('href', image.src);
+            link.setAttribute('title', image.name + ' - ' + size);
 
-            imageElement.setAttribute('data-thumb', image.url);
+            imageElement.setAttribute('data-thumb', image.thumb);
+            imageElement.setAttribute('data-url', image.url);
+            imageElement.setAttribute('data-src', image.src);
+            imageElement.setAttribute('data-size', size);
+
             imageElement.setAttribute('alt', image.name);
 
             this.list.push(imageElement);
 
             link.onclick = function(e) {
                 e.preventDefault();
-                self.preview.show.call(self.preview, imageElement, image);
+                self.preview.show.call(self.preview, imageElement);
             };
 
             // a img
@@ -143,6 +148,16 @@
             // .imgContainer a
             imageContainer.appendChild(link);
             return imageContainer;
+        },
+
+        bytesToSize: function(bytes) {
+            if (bytes == 0) {
+                return '0 Byte';
+            }
+            var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
+                i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+
+            return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
         }
     };
 
@@ -197,54 +212,74 @@
             this.toggleScroll(true);
         },
 
-        show: function(imageEl, imageObj) {
+        show: function(image) {
             // clear all previous content
             this.itemsContainer.innerHTML = '';
             this.container.style.display = 'block';
             this.toggleScroll(false);
-            this.createFigure(imageObj);
+
+            this.getImages('next', image, 2);
+            this.getImages('prev', image, 2);
+
+            // #Preview figure
+            this.itemsContainer.appendChild(this.createFigure(image));
+        },
+
+        getImages: function(dir, image, limit) {
+            var slibling = dir == 'next' ? 'nextSibling' : 'previousSibling',
+                imageContainer = image.parentNode.parentNode,
+                i = 0;
+
+            // move one slibling
+            imageContainer = imageContainer[slibling];
+            while (imageContainer && i < limit) {
+                if (imageContainer.nodeType == 1) {
+                    var figure = this.createFigure(imageContainer.firstChild.firstChild);
+                    if (dir == 'next') {
+                        this.itemsContainer.appendChild(figure);
+                    } else {
+                        this.itemsContainer.insertBefore(figure, this.itemsContainer.firstChild);
+                    }
+                }
+                imageContainer = imageContainer[slibling];
+                i++;
+            }
+
         },
 
         createFigure: function(image) {
+            // @TODO add additional layer for better image responsive with always visible caption
+            // @TODO add image loading indicator
+
             var sourceLink = document.createElement('a'),
                 figureElement = document.createElement('figure'),
                 figcaptionElement = document.createElement('figcaption'),
-                imageElement = new Image(),
-                caption = image.width + ' x ' + image.height + ' (' + this.bytesToSize(image.size) + ')<br>';
+                imageElement = new Image();
 
-            sourceLink.setAttribute('href', image.url);
+            sourceLink.setAttribute('href', image.getAttribute('data-url'));
             sourceLink.setAttribute('target', '_blank');
             sourceLink.appendChild(document.createTextNode('source image'));
 
-            figcaptionElement.innerHTML = caption;
+            figcaptionElement.innerHTML = image.getAttribute('data-size') + '<br>';
             figcaptionElement.appendChild(sourceLink);
+
+            imageElement.onload = function() {
+            };
+
+            imageElement.setAttribute('src', image.getAttribute('data-src'));
 
             // figure img
             figureElement.appendChild(imageElement);
             // figure figcaption
             figureElement.appendChild(figcaptionElement);
-            // #Preview figure
-            this.itemsContainer.appendChild(figureElement);
 
-            imageElement.onload = function() {
-            };
-
-            imageElement.setAttribute('src', image.url);
+            return figureElement;
         },
 
         toggleScroll: function(on) {
             document.body.style.overflow = on ? '' : 'hidden';
-        },
-
-        bytesToSize: function(bytes) {
-            if (bytes == 0) {
-                return '0 Byte';
-            }
-            var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
-                i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-
-            return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
         }
+
     };
 
     /**
@@ -262,7 +297,7 @@
             aisort: 'timestamp',
             aidir: 'descending',
             aiprop: 'url|mediatype|mime|size',
-            ailimit: 200
+            ailimit: 100
         },
         maxThumbWidth: 300,
         maxPreviewWidth: screen.width,
@@ -327,7 +362,7 @@
                 }
                 image.url = image.url.replace('?', '%3F');
                 image.thumb = this.shrinkImage(image, this.maxThumbWidth, 400);
-                image.url = this.shrinkImage(image, this.maxPreviewWidth, 400);
+                image.src = this.shrinkImage(image, this.maxPreviewWidth, 400);
             }
 
             return data.filter(function(value){
@@ -350,7 +385,7 @@
     };
     LazyLoader.prototype = {
         imagesThreshold: 2000,
-        contentThreshold: 10000,
+        contentThreshold: 4000,
 
         listenForImages: function() {
             window.addEventListener('resize', this.debounce(this.loadThumbnail.bind(this), 10), false);
