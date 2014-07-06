@@ -164,6 +164,7 @@
     /**
      * Image Preview handling
      * @constructor
+     * @TODO refactor
      */
     var Preview = function() {
         var self = this;
@@ -211,6 +212,7 @@
             this.itemsContainer = document.createElement('ul');
             this.itemsContainer.setAttribute('id', 'previewItems');
             closePreview.setAttribute('id', 'closePreview');
+            closePreview.setAttribute('class', 'icon');
             closePreview.onclick = function() {
                 self.hide();
             };
@@ -264,8 +266,7 @@
 
             this.setOffset(-100);
 
-            // pobrac element z offsetem i dodac go na koniec
-            this.getImages('next', this.currentImage, 1, this.boundingImages, function(createdImages) {
+            this.getImages('next', this.currentImage, 1, this.boundingImages, function() {
 
                 if (!wasFirst){
                     // remove first preview element
@@ -273,6 +274,9 @@
                     // move view to left by one page
                     self.setOffset(100);
                 }
+
+                // scroll
+                self.scrollToImage(self.currentImage);
             });
         },
 
@@ -288,7 +292,6 @@
 
                 this.setOffset(100);
 
-                // pobrac element z offsetem i dodac go na poczatek
                 this.getImages('prev', this.currentImage, 1, this.boundingImages, function(createdImages) {
 
                     // remove last preview element
@@ -311,10 +314,10 @@
 
         scrollToImage: function(image) {
             var viewport = document.documentElement.getBoundingClientRect(),
-                elementOffset = image.getBoundingClientRect(),
+                imageOffset = image.getBoundingClientRect(),
                 vieportTop = (viewport.top * (-1));
 
-            window.scrollTo(0, elementOffset.top + vieportTop);
+            window.scrollTo(0, imageOffset.top + vieportTop);
         },
 
         removeFirst: function() {
@@ -357,11 +360,32 @@
         },
 
         createView: function(image, done) {
-            var sourceLink = document.createElement('a'),
+            var self = this,
+                sourceLink = document.createElement('a'),
                 viewElement = document.createElement('li'),
                 figureElement = document.createElement('figure'),
                 figcaptionElement = document.createElement('figcaption'),
-                imageElement = new Image();
+                imageElement = new Image(),
+                imageContainer = document.createElement('div'),
+                next = document.createElement('div'),
+                previous = document.createElement('div');
+
+            figureElement.setAttribute('class', 'blank');
+
+            imageContainer.setAttribute('class', 'bigImageContainer');
+            next.setAttribute('class', 'icon next');
+            next.onclick = function() {
+                self.showNext();
+            };
+            // .bigImageContainer .next
+            imageContainer.appendChild(next);
+
+            previous.setAttribute('class', 'icon previous');
+            previous.onclick = function() {
+                self.showPrevious();
+            };
+            // .bigImageContainer .previous
+            imageContainer.appendChild(previous);
 
             sourceLink.setAttribute('href', image.getAttribute('data-url'));
             sourceLink.setAttribute('target', '_blank');
@@ -380,13 +404,14 @@
                 typeof done === 'function' && done();
             };
 
-            figureElement.setAttribute('class', 'blank');
             imageElement.setAttribute('src', image.getAttribute('data-src'));
 
-            // figure img
-            figureElement.appendChild(imageElement);
+            // .bigImageContainer img
+            imageContainer.appendChild(imageElement);
             // figure figcaption
-            figureElement.appendChild(figcaptionElement);
+            imageContainer.appendChild(figcaptionElement);
+            // figure .bigImageContainer
+            figureElement.appendChild(imageContainer);
             // li figure
             viewElement.appendChild(figureElement);
 

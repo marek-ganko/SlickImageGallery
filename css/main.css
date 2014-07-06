@@ -124,16 +124,19 @@ a:focus {
     overflow: hidden;
 }
 
-#closePreview {
+.icon {
     position: absolute;
-    width: 48px;
-    height: 48px;
-    top: 10px;
-    right: 10px;
+    width: 40px;
+    height: 40px;
     z-index: 999;
     cursor: pointer;
-    background: #000 url(../img/close.png) no-repeat center;
     opacity: 0.6;
+}
+
+#closePreview {
+    top: 10px;
+    right: 10px;
+    background: #fff url(../img/close.png) no-repeat center;
 }
 
 #previewItems {
@@ -166,12 +169,40 @@ a:focus {
     text-align: center;
     max-width: 100%;
     height: auto;
-    max-height: 85%;
+    max-height: 100%;
 }
 
 #Preview figcaption {
-    padding: 15px;
+    padding: 5px;
     text-align: center;
+}
+
+.bigImageContainer {
+    width: 100%;
+    max-height: 70%;
+    position: relative;
+    top: 45%;
+    -webkit-transform: translateY(-45%);
+    -moz-transform: translateY(-45%);
+    -ms-transform: translateY(-45%);
+    -o-transform: translateY(-45%);
+    transform: translateY(-45%);
+}
+
+.previous {
+    position: fixed;
+    top: 50%;
+    left: 6%;
+    margin-top: -20px;
+    background: #fff url(../img/previous.png) no-repeat center;
+}
+
+.next {
+    position: fixed;
+    top: 50%;
+    right: 6%;
+    margin-top: -20px;
+    background: #fff url(../img/next.png) no-repeat center;
 }
 
 /* Media specific styles */
