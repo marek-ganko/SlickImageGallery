@@ -198,20 +198,21 @@
         },
 
         show: function(imageEl, imageObj) {
-            var self = this,
-                imageContainer = document.createElement('div'),
-                sourceLink = document.createElement('a'),
+            // clear all previous content
+            this.itemsContainer.innerHTML = '';
+            this.container.style.display = 'block';
+            this.toggleScroll(false);
+            this.createFigure(imageObj);
+        },
+
+        createFigure: function(image) {
+            var sourceLink = document.createElement('a'),
                 figureElement = document.createElement('figure'),
                 figcaptionElement = document.createElement('figcaption'),
                 imageElement = new Image(),
-                caption = imageObj.width + ' x ' + imageObj.height + ' (' + this.bytesToSize(imageObj.size) + ')<br>';
+                caption = image.width + ' x ' + image.height + ' (' + this.bytesToSize(image.size) + ')<br>';
 
-            this.toggleScroll(false);
-
-            // clear all previous content
-            this.itemsContainer.innerHTML = '';
-
-            sourceLink.setAttribute('href', imageObj.url);
+            sourceLink.setAttribute('href', image.url);
             sourceLink.setAttribute('target', '_blank');
             sourceLink.appendChild(document.createTextNode('source image'));
 
@@ -226,11 +227,9 @@
             this.itemsContainer.appendChild(figureElement);
 
             imageElement.onload = function() {
-//                this.removeAttribute('class');
             };
 
-            imageElement.setAttribute('src', imageObj.url);
-            this.container.style.display = 'block';
+            imageElement.setAttribute('src', image.url);
         },
 
         toggleScroll: function(on) {
