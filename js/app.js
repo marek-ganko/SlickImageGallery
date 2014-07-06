@@ -199,14 +199,24 @@
 
         show: function(imageEl, imageObj) {
             var self = this,
+                imageContainer = document.createElement('div'),
+                sourceLink = document.createElement('a'),
                 figureElement = document.createElement('figure'),
                 figcaptionElement = document.createElement('figcaption'),
-                imageElement = new Image();
+                imageElement = new Image(),
+                caption = imageObj.width + ' x ' + imageObj.height + ' (' + this.bytesToSize(imageObj.size) + ')<br>';
 
             this.toggleScroll(false);
 
+            // clear all previous content
             this.itemsContainer.innerHTML = '';
-            figcaptionElement.appendChild(document.createTextNode(imageObj.name));
+
+            sourceLink.setAttribute('href', imageObj.url);
+            sourceLink.setAttribute('target', '_blank');
+            sourceLink.appendChild(document.createTextNode('source image'));
+
+            figcaptionElement.innerHTML = caption;
+            figcaptionElement.appendChild(sourceLink);
 
             // figure img
             figureElement.appendChild(imageElement);
@@ -219,14 +229,22 @@
 //                this.removeAttribute('class');
             };
 
-            console.log(imageEl, imageObj);
-
             imageElement.setAttribute('src', imageObj.url);
             this.container.style.display = 'block';
         },
 
         toggleScroll: function(on) {
             document.body.style.overflow = on ? '' : 'hidden';
+        },
+
+        bytesToSize: function(bytes) {
+            if (bytes == 0) {
+                return '0 Byte';
+            }
+            var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
+                i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+
+            return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
         }
     };
 
