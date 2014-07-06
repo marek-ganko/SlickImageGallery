@@ -205,6 +205,20 @@ a:focus {
     background: #fff url(../img/next.png) no-repeat center;
 }
 
+#shortcutsInfo {
+    position: absolute;
+    width: 100px;
+    z-index: 999;
+    top: 10px;
+    left: 10px;
+    cursor: pointer;
+    opacity: 0.6;
+    background: #222;
+    font-size: 0.8em;
+    text-align: left;
+    padding: 10px;
+}
+
 /* Media specific styles */
 
 @media only screen

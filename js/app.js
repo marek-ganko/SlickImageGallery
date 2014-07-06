@@ -207,7 +207,8 @@
 
         createContainer: function() {
             var self = this,
-                closePreview = document.createElement('div');
+                closePreview = document.createElement('div'),
+                shortcutsInfo = document.createElement('div');
 
             this.itemsContainer = document.createElement('ul');
             this.itemsContainer.setAttribute('id', 'previewItems');
@@ -216,11 +217,18 @@
             closePreview.onclick = function() {
                 self.hide();
             };
+            shortcutsInfo.setAttribute('id', 'shortcutsInfo');
+            shortcutsInfo.innerHTML = 'Use shortcuts:<br>next: &rarr; or W<br>previous: &larr; or A<br>exit: Esc';
+            shortcutsInfo.onclick = function() {
+                shortcutsInfo.style.display = 'none';
+            };
 
             this.container = document.createElement('div');
             this.container.setAttribute('id', 'Preview');
             // #Preview #closePreview
             this.container.appendChild(closePreview);
+            // #Preview #shortcutsInfo
+            this.container.appendChild(shortcutsInfo);
             // #Preview ul
             this.container.appendChild(this.itemsContainer);
         },
