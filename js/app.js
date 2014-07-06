@@ -166,33 +166,49 @@
      * @constructor
      */
     var Preview = function() {
+        var self = this;
+
         this.init();
-        this.listen();
+        this.listeners = function(e) {
+            // close on ESC
+            if (e.keyCode == 27) {
+                self.hide();
+            }
+            // show previous picture on left and A
+            if (e.keyCode == 37 || e.keyCode == 65) {
+                self.showPrevious();
+            }
+            // show next picture on right and D
+            if (e.keyCode == 39 || e.keyCode == 68) {
+                self.showNext();
+            }
+        };
     };
     Preview.prototype = {
         container: null,
         itemsContainer: null,
+        offset: 0,
+        boundingImages: 2,
+        isFirstImage: true,
+        currentImage: null,
 
         init: function() {
             this.createContainer();
         },
 
-        listen: function() {
-            var self = this;
+        startListening: function() {
+            window.addEventListener('keyup', this.listeners, false);
+        },
 
-            // close on ESC
-            window.addEventListener('keyup', function(e) {
-                if (e.keyCode == 27) {
-                    self.hide();
-                }
-            }, false);
+        stopListening: function() {
+            window.removeEventListener('keyup', this.listeners, false);
         },
 
         createContainer: function() {
             var self = this,
                 closePreview = document.createElement('div');
 
-            this.itemsContainer = document.createElement('div');
+            this.itemsContainer = document.createElement('ul');
             this.itemsContainer.setAttribute('id', 'previewItems');
             closePreview.setAttribute('id', 'closePreview');
             closePreview.onclick = function() {
@@ -203,55 +219,146 @@
             this.container.setAttribute('id', 'Preview');
             // #Preview #closePreview
             this.container.appendChild(closePreview);
-            // #Preview #previewItems
+            // #Preview ul
             this.container.appendChild(this.itemsContainer);
         },
 
         hide: function() {
             this.container.style.display = 'none';
             this.toggleScroll(true);
+            this.stopListening();
         },
 
         show: function(image) {
+            var self = this;
+
             // clear all previous content
             this.itemsContainer.innerHTML = '';
             this.container.style.display = 'block';
             this.toggleScroll(false);
-
-            this.getImages('next', image, 2);
-            this.getImages('prev', image, 2);
+            this.offset = 0;
 
             // #Preview figure
-            this.itemsContainer.appendChild(this.createFigure(image));
+            this.itemsContainer.appendChild(this.createView(image, function() {
+                self.currentImage = image;
+                self.startListening();
+                self.getImages('next', image, self.boundingImages, 0);
+                self.getImages('prev', image, self.boundingImages, 0, function(createdImages) {
+                    self.setOffset(-100 * createdImages);
+                });
+            }));
         },
 
-        getImages: function(dir, image, limit) {
+        setOffset: function(offset) {
+            this.offset += offset;
+            this.itemsContainer.style.left = this.offset + '%';
+        },
+
+        showNext: function() {
+            var self = this,
+                imageContainer = this.currentImage.parentNode.parentNode,
+                wasFirst = this.isFirstImage;
+
+            imageContainer = imageContainer.nextSibling;
+            this.setCurrentImage(imageContainer.firstChild.firstChild);
+
+            this.setOffset(-100);
+
+            // pobrac element z offsetem i dodac go na koniec
+            this.getImages('next', this.currentImage, 1, this.boundingImages, function(createdImages) {
+
+                if (!wasFirst){
+                    // remove first preview element
+                    self.removeFirst();
+                    // move view to left by one page
+                    self.setOffset(100);
+                }
+            });
+        },
+
+        showPrevious: function() {
+            var self = this,
+                imageContainer = this.currentImage.parentNode.parentNode;
+
+            imageContainer = imageContainer.previousSibling;
+            this.isFirstImage = imageContainer.getAttribute('class') != 'imgContainer';
+
+            if (!this.isFirstImage) {
+                this.setCurrentImage(imageContainer.firstChild.firstChild);
+
+                this.setOffset(100);
+
+                // pobrac element z offsetem i dodac go na poczatek
+                this.getImages('prev', this.currentImage, 1, this.boundingImages, function(createdImages) {
+
+                    // remove last preview element
+                    self.removeLast();
+
+                    // move view to right by one page
+                    self.setOffset(-100 * createdImages);
+
+                    // scroll
+                    self.scrollToImage(self.currentImage);
+                });
+            }
+        },
+
+        setCurrentImage: function(image) {
+            var containerClass = image.parentNode && image.parentNode.parentNode && image.parentNode.parentNode.getAttribute('class');
+            this.currentImage = image;
+            this.isFirstImage = containerClass != 'imgContainer';
+        },
+
+        scrollToImage: function(image) {
+            var viewport = document.documentElement.getBoundingClientRect(),
+                elementOffset = image.getBoundingClientRect(),
+                vieportTop = (viewport.top * (-1));
+
+            window.scrollTo(0, elementOffset.top + vieportTop);
+        },
+
+        removeFirst: function() {
+            this.itemsContainer.removeChild(this.itemsContainer.firstChild);
+        },
+
+        removeLast: function() {
+            this.itemsContainer.removeChild(this.itemsContainer.lastChild);
+        },
+
+        getImages: function(dir, image, limit, offset, done) {
             var slibling = dir == 'next' ? 'nextSibling' : 'previousSibling',
                 imageContainer = image.parentNode.parentNode,
-                i = 0;
+                i = 0,
+                createdImages = 0;
 
-            // move one slibling
             imageContainer = imageContainer[slibling];
-            while (imageContainer && i < limit) {
+            while (imageContainer && imageContainer.getAttribute('class') == 'imgContainer' && i < limit + offset) {
+                ++i;
+
+                if (offset > i - 1) {
+                    continue;
+                }
+
                 if (imageContainer.nodeType == 1) {
-                    var figure = this.createFigure(imageContainer.firstChild.firstChild);
+                    var figure = this.createView(imageContainer.firstChild.firstChild);
                     if (dir == 'next') {
+                        // ul:after li
                         this.itemsContainer.appendChild(figure);
                     } else {
+                        // ul:before li
                         this.itemsContainer.insertBefore(figure, this.itemsContainer.firstChild);
+                        this.isFirstImage = false;
                     }
+                    ++createdImages;
                 }
                 imageContainer = imageContainer[slibling];
-                i++;
             }
-
+            typeof done === 'function' && done(createdImages);
         },
 
-        createFigure: function(image) {
-            // @TODO add additional layer for better image responsive with always visible caption
-            // @TODO add image loading indicator
-
+        createView: function(image, done) {
             var sourceLink = document.createElement('a'),
+                viewElement = document.createElement('li'),
                 figureElement = document.createElement('figure'),
                 figcaptionElement = document.createElement('figcaption'),
                 imageElement = new Image();
@@ -264,22 +371,31 @@
             figcaptionElement.appendChild(sourceLink);
 
             imageElement.onload = function() {
+                figureElement.removeAttribute('class');
+                typeof done === 'function' && done();
+            };
+            imageElement.onerror = function() {
+                figureElement.innerHTML = '';
+                figureElement.setAttribute('class', figureElement.getAttribute('class').replace('blank', 'broken'));
+                typeof done === 'function' && done();
             };
 
+            figureElement.setAttribute('class', 'blank');
             imageElement.setAttribute('src', image.getAttribute('data-src'));
 
             // figure img
             figureElement.appendChild(imageElement);
             // figure figcaption
             figureElement.appendChild(figcaptionElement);
+            // li figure
+            viewElement.appendChild(figureElement);
 
-            return figureElement;
+            return viewElement;
         },
 
         toggleScroll: function(on) {
             document.body.style.overflow = on ? '' : 'hidden';
         }
-
     };
 
     /**

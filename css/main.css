@@ -121,6 +121,7 @@ a:focus {
     z-index: 999;
     background: #000;
     margin: 0;
+    overflow: hidden;
 }
 
 #closePreview {
@@ -129,25 +130,46 @@ a:focus {
     height: 48px;
     top: 10px;
     right: 10px;
+    z-index: 999;
     cursor: pointer;
     background: #000 url(../img/close.png) no-repeat center;
     opacity: 0.6;
 }
 
+#previewItems {
+    position: relative;
+    width: 500%;
+    height: 100%;
+    margin: 0;
+    padding:0;
+    list-style: none;
+    overflow: hidden;
+    left: 0;
+    display: block;
+}
+
+#previewItems li {
+    display: block;
+    width: 20%;
+    height: 100%;
+    float: left;
+    position: relative;
+}
+
 #Preview figure {
-    width: 100%;
+    width: 80%;
     height: 100%;
     margin: 20px auto;
 }
 
-#Preview figure img {
+#Preview img {
     text-align: center;
     max-width: 100%;
     height: auto;
-    max-height: 70%;
+    max-height: 85%;
 }
 
-#Preview figure figcaption {
+#Preview figcaption {
     padding: 15px;
     text-align: center;
 }
