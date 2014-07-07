@@ -588,8 +588,8 @@
                             imageContainer.setAttribute('class', imageContainer.getAttribute('class').replace('blank', '').trim());
                         };
                         image.onerror = function() {
-                            imageContainer.innerHTML = '';
-                            imageContainer.setAttribute('class', imageContainer.getAttribute('class').replace('blank', 'broken'));
+                            // remove broken image
+                            imageContainer.parentNode.removeChild(imageContainer);
                         };
                         image.setAttribute('src', image.getAttribute('data-thumb'));
                         image.removeAttribute('data-thumb');
