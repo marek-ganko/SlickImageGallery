@@ -427,7 +427,19 @@
         },
 
         toggleScroll: function(on) {
-            document.body.style.overflow = on ? '' : 'hidden';
+            if (on) {
+                document.ontouchmove = function(e) {
+                    return true;
+                };
+                document.body.style.overflow = '';
+                document.body.style.overflow = '';
+            } else {
+                document.ontouchmove = function(e) {
+                    e.preventDefault();
+                    return false;
+                };
+                document.body.style.overflow = 'hidden';
+            }
         }
     };
 
@@ -540,12 +552,16 @@
             window.addEventListener('resize', this.debounce(this.loadThumbnail.bind(this), 10), false);
             document.addEventListener('scroll', this.debounce(this.loadThumbnail.bind(this), 10), false);
             document.addEventListener('touchstart', this.debounce(this.loadThumbnail.bind(this), 10), false);
+            document.addEventListener('touchmove', this.debounce(this.loadThumbnail.bind(this), 10), false);
+            document.addEventListener('touchstop', this.debounce(this.loadThumbnail.bind(this), 10), false);
         },
 
         listenForContent: function(triggerElement, done) {
             window.addEventListener('resize', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
             document.addEventListener('scroll', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
             document.addEventListener('touchstart', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
+            document.addEventListener('touchmove', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
+            document.addEventListener('touchstop', this.debounce(this.loadContent.bind(this, triggerElement, done), 100), false);
 
             this.loadContent(triggerElement, done);
         },
