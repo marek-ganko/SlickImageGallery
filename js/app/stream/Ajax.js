@@ -12,6 +12,7 @@ app.stream.Ajax = (function(){
     return function() {
 
         /**
+         * Ajax call
          * @param {Object} data
          * @param {Callback} callback
          */

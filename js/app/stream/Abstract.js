@@ -14,8 +14,8 @@ app.stream.Abstract = function() {
     };
 
     /**
-     * @param limit
-     * @param callback
+     * @param {number} limit
+     * @param {Callback} callback
      */
     this.getList = function(limit, callback) {
         throw new Error('Method getList not implemented');

@@ -15,11 +15,17 @@ app.Image = (function(){
         this.container = null;
         this.list = [];
 
+        /**
+         * Initialize Image object
+         */
         this.init = function() {
             ImagePreview.init();
             this.createContainer();
         };
 
+        /**
+         * Creates DOM element container for images
+         */
         this.createContainer = function() {
             this.container = document.createElement('div');
             this.container.setAttribute('id', 'Images');
@@ -28,6 +34,7 @@ app.Image = (function(){
         };
 
         /**
+         * Creates images objects and appends them to DOM
          * @param {Array} images
          * @param {Callback} callback
          */
@@ -39,11 +46,16 @@ app.Image = (function(){
             callback(null);
         };
 
+        /**
+         * Returns DOM element containing container and image
+         * @param {Object} image
+         * @returns {HTMLElement}
+         */
         this.create = function(image) {
             var imageContainer = document.createElement('div'),
                 link = document.createElement('a'),
                 imageElement = new Image(),
-                size = image.width + ' x ' + image.height + ' (' + this.bytesToSize(image.size) + ')';
+                size = image.width + ' x ' + image.height + ' (' + app.bytesToSize(image.size) + ')';
 
             imageContainer.setAttribute('class', 'imgContainer blank');
 
@@ -69,16 +81,6 @@ app.Image = (function(){
             // .imgContainer a
             imageContainer.appendChild(link);
             return imageContainer;
-        };
-
-        this.bytesToSize = function(bytes) {
-            if (bytes == 0) {
-                return '0 Byte';
-            }
-            var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
-                i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-
-            return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
         };
     };
 })();

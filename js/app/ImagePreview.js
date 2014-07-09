@@ -20,10 +20,17 @@ app.ImagePreview = (function() {
         this.isFirstImage = true;
         this.currentImage = null;
 
+        /**
+         * Initialize preview
+         */
         this.init = function() {
             this.createContainer();
         };
 
+        /**
+         * listeners for preview control
+         * @param {EventTarget} e
+         */
         this.listeners = function(e) {
             // close on ESC
             if (e.keyCode == 27) {
@@ -39,14 +46,23 @@ app.ImagePreview = (function() {
             }
         };
 
+        /**
+         * Adds liteners
+         */
         this.startListening = function() {
             window.addEventListener('keyup', this.listeners, false);
         };
 
+        /**
+         * Removes listeners
+         */
         this.stopListening = function() {
             window.removeEventListener('keyup', this.listeners, false);
         };
 
+        /**
+         * Creates prieview DOM container
+         */
         this.createContainer = function() {
             var closePreview = document.createElement('div'),
                 shortcutsInfo = document.createElement('div');
@@ -74,108 +90,17 @@ app.ImagePreview = (function() {
             this.container.appendChild(this.itemsContainer);
         };
 
-        this.hide = function() {
-            this.container.style.display = 'none';
-            this.toggleScroll(true);
-            this.stopListening();
-        };
-
-        this.show = function(image) {
-            // clear all previous content
-            this.itemsContainer.innerHTML = '';
-            this.container.style.display = 'block';
-            this.toggleScroll(false);
-            this.offset = 0;
-
-            // #Preview figure
-            this.itemsContainer.appendChild(this.createView(image, function() {
-                _self.currentImage = image;
-                _self.startListening();
-                _self.getImages('next', image, _self.boundingImages, 0);
-                _self.getImages('prev', image, _self.boundingImages, 0, function(createdImages) {
-                    _self.setOffset(-100 * createdImages);
-                });
-            }));
-        };
-
-        this.setOffset = function(offset) {
-            this.offset += offset;
-            this.itemsContainer.style.left = this.offset + '%';
-        };
-
-        this.showNext = function() {
-            var imageContainer = this.currentImage.parentNode.parentNode,
-                wasFirst = this.isFirstImage;
-
-            imageContainer = imageContainer.nextSibling;
-            this.setCurrentImage(imageContainer.firstChild.firstChild);
-
-            this.setOffset(-100);
-
-            this.getImages('next', this.currentImage, 1, this.boundingImages, function() {
-
-                if (!wasFirst) {
-                    // remove first preview element
-                    _self.removeFirst();
-                    // move view to left by one page
-                    _self.setOffset(100);
-                }
-
-                // scroll
-                _self.scrollToImage(_self.currentImage);
-            });
-        };
-
-        this.showPrevious = function() {
-            var imageContainer = this.currentImage.parentNode.parentNode;
-
-            imageContainer = imageContainer.previousSibling;
-            this.isFirstImage = imageContainer.getAttribute('class') != 'imgContainer';
-
-            if (!this.isFirstImage) {
-                this.setCurrentImage(imageContainer.firstChild.firstChild);
-
-                this.setOffset(100);
-
-                this.getImages('prev', this.currentImage, 1, this.boundingImages, function(createdImages) {
-
-                    // remove last preview element
-                    _self.removeLast();
-
-                    // move view to right by one page
-                    _self.setOffset(-100 * createdImages);
-
-                    // scroll
-                    _self.scrollToImage(_self.currentImage);
-                });
-            }
-        };
-
-        this.setCurrentImage = function(image) {
-            var containerClass = image.parentNode && image.parentNode.parentNode && image.parentNode.parentNode.getAttribute('class');
-            this.currentImage = image;
-            this.isFirstImage = containerClass != 'imgContainer';
-        };
-
-        this.scrollToImage = function(image) {
-            var viewport = document.documentElement.getBoundingClientRect(),
-                imageOffset = image.getBoundingClientRect(),
-                vieportTop = (viewport.top * (-1));
-
-            window.scrollTo(0, imageOffset.top + vieportTop);
-        };
-
-        this.removeFirst = function() {
-            this.itemsContainer.removeChild(this.itemsContainer.firstChild);
-        };
-
-        this.removeLast = function() {
-            this.itemsContainer.removeChild(this.itemsContainer.lastChild);
-        };
-
-        this.getImages = function(dir, image, limit, offset, done) {
+        /**
+         * Get Images from Gallery image list
+         * @param {String} dir
+         * @param {HTMLElement} currentImage
+         * @param {Number} limit
+         * @param {Number} offset
+         * @param {Callback} callback
+         */
+        this.getImages = function(dir, currentImage, limit, offset, callback) {
             var slibling = dir == 'next' ? 'nextSibling' : 'previousSibling',
-                imageContainer = image.parentNode.parentNode,
+                imageContainer = currentImage.parentNode.parentNode,
                 i = 0,
                 createdImages = 0;
 
@@ -201,10 +126,50 @@ app.ImagePreview = (function() {
                 }
                 imageContainer = imageContainer[slibling];
             }
-            typeof done === 'function' && done(createdImages);
+            typeof callback === 'function' && callback(null, createdImages);
         };
 
-        this.createView = function(image, done) {
+        /**
+         * Hide preview
+         */
+        this.hide = function() {
+            this.container.style.display = 'none';
+            this.toggleListenScroll(true);
+            this.stopListening();
+        };
+
+        /**
+         * Show preview
+         * @param {HTMLElement} image
+         */
+        this.show = function(image) {
+            // clear all previous content
+            this.itemsContainer.innerHTML = '';
+            this.container.style.display = 'block';
+            this.toggleListenScroll(false);
+            this.offset = 0;
+
+            // #Preview figure
+            this.itemsContainer.appendChild(this.createView(image, function(error) {
+                if (error) {
+                    return error;
+                }
+                _self.currentImage = image;
+                _self.startListening();
+                _self.getImages('next', image, _self.boundingImages, 0);
+                _self.getImages('prev', image, _self.boundingImages, 0, function(error, createdImages) {
+                    return error || _self.setOffset(-100 * createdImages);
+                });
+            }));
+        };
+
+        /**
+         * Creates preview DOM elements
+         * @param {HTMLElement} image
+         * @param {Callback} callback
+         * @returns {HTMLElement}
+         */
+        this.createView = function(image, callback) {
             var sourceLink = document.createElement('a'),
                 viewElement = document.createElement('li'),
                 figureElement = document.createElement('figure'),
@@ -240,12 +205,12 @@ app.ImagePreview = (function() {
 
             imageElement.onload = function() {
                 figureElement.removeAttribute('class');
-                typeof done === 'function' && done();
+                typeof callback === 'function' && callback(null);
             };
             imageElement.onerror = function() {
                 figureElement.innerHTML = '';
                 figureElement.setAttribute('class', figureElement.getAttribute('class').replace('blank', 'broken'));
-                typeof done === 'function' && done();
+                typeof callback === 'function' && callback(null);
             };
 
             imageElement.setAttribute('src', image.getAttribute('data-src'));
@@ -262,12 +227,118 @@ app.ImagePreview = (function() {
             return viewElement;
         };
 
-        this.toggleScroll = function(on) {
+        /**
+         * Set style offset of container
+         * @param {Number} offset
+         */
+        this.setOffset = function(offset) {
+            this.offset += offset;
+            this.itemsContainer.style.left = this.offset + '%';
+        };
+
+        /**
+         * Show next image
+         */
+        this.showNext = function() {
+            var imageContainer = this.currentImage.parentNode.parentNode,
+                wasFirst = this.isFirstImage;
+
+            imageContainer = imageContainer.nextSibling;
+            this.setCurrentImage(imageContainer.firstChild.firstChild);
+
+            this.setOffset(-100);
+
+            this.getImages('next', this.currentImage, 1, this.boundingImages, function(error) {
+                if (error) {
+                    return error;
+                }
+                if (!wasFirst) {
+                    // remove first preview element
+                    _self.removeFirst();
+                    // move view to left by one page
+                    _self.setOffset(100);
+                }
+
+                // scroll
+                _self.scrollToImage(_self.currentImage);
+            });
+        };
+
+        /**
+         * Show previous image
+         */
+        this.showPrevious = function() {
+            var imageContainer = this.currentImage.parentNode.parentNode;
+
+            imageContainer = imageContainer.previousSibling;
+            this.isFirstImage = imageContainer.getAttribute('class') != 'imgContainer';
+
+            if (!this.isFirstImage) {
+                this.setCurrentImage(imageContainer.firstChild.firstChild);
+
+                this.setOffset(100);
+
+                this.getImages('prev', this.currentImage, 1, this.boundingImages, function(error, createdImages) {
+                    if (error) {
+                        return error;
+                    }
+                    // remove last preview element
+                    _self.removeLast();
+
+                    // move view to right by one page
+                    _self.setOffset(-100 * createdImages);
+
+                    // scroll
+                    _self.scrollToImage(_self.currentImage);
+                });
+            }
+        };
+
+        /**
+         * Set current visible image
+         * @param {HTMLElement} image
+         */
+        this.setCurrentImage = function(image) {
+            var containerClass = image.parentNode && image.parentNode.parentNode && image.parentNode.parentNode.getAttribute('class');
+            this.currentImage = image;
+            this.isFirstImage = containerClass != 'imgContainer';
+        };
+
+        /**
+         * Scroll window to passed image top
+         * @param {HTMLElement} image
+         */
+        this.scrollToImage = function(image) {
+            var viewport = document.documentElement.getBoundingClientRect(),
+                imageOffset = image.getBoundingClientRect(),
+                vieportTop = (viewport.top * (-1));
+
+            window.scrollTo(0, imageOffset.top + vieportTop);
+        };
+
+        /**
+         * Remove first image with its container
+         */
+        this.removeFirst = function() {
+            this.itemsContainer.removeChild(this.itemsContainer.firstChild);
+        };
+
+        /**
+         * Remove last image with its container
+         */
+        this.removeLast = function() {
+            this.itemsContainer.removeChild(this.itemsContainer.lastChild);
+        };
+
+        /**
+         * Toggle Listener on Scroll - mobile mainly
+         * @param {Boolean} on
+         */
+        this.toggleListenScroll = function(on) {
             if (on) {
                 document.ontouchmove = function(e) {
                     return true;
                 };
-                document.body.style.overflow = '';
                 document.body.style.overflow = '';
             } else {
                 document.ontouchmove = function(e) {

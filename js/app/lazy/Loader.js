@@ -27,7 +27,7 @@ app.lazy.Loader = function() {
     };
 
     /**
-     * Reduce
+     * Reduce function call by delay
      * @param {Function} fn
      * @returns {Function}
      */

@@ -33,14 +33,22 @@ app.stream.MediaWikiClient = (function() {
 
             this.options = {
                 maxThumbWidth: 300,
-                maxImageWidth: screen.width
+                maxImageWidth: screen.width,
+                imageWidthThreshold: 400
             };
 
+            /**
+             * @param {Callback} callback
+             */
             this.init = function(callback) {
-                this.getImageUrl(callback);
+                this.setImageUrl(callback);
             };
 
-            this.getImageUrl = function(callback) {
+            /**
+             * Sets urls for thumbUrl and rootUrl
+             * @param {Callback} callback
+             */
+            this.setImageUrl = function(callback) {
                 Ajax.get({
                     url: url,
                     dataType: 'jsonp',
@@ -52,6 +60,11 @@ app.stream.MediaWikiClient = (function() {
                 });
             };
 
+            /**
+             * Gets list of images
+             * @param {Number} limit
+             * @param {Callback} callback
+             */
             this.getList = function(limit, callback) {
                 limit = limit > maxLimit ? maxLimit : limit;
                 Ajax.get({
@@ -59,11 +72,17 @@ app.stream.MediaWikiClient = (function() {
                     dataType: 'jsonp',
                     data: app.extend(listQueryParams, {ailimit: limit})
                 }, function(error, data) {
-                    return error && callback(error) || _self.parseResults(data, callback);
+                    return error && callback(error) || _self.validateResults(data, callback);
                 });
             };
 
-            this.parseResults = function(data, callback) {
+            /**
+             * Validates results
+             * @param {Object} data
+             * @param {Callback} callback
+             * @returns {*}
+             */
+            this.validateResults = function(data, callback) {
                 if (data.error && data.error.info) {
                     return callback('Error from MediaWiki: <br>' + data.error.info);
                 }
@@ -93,8 +112,8 @@ app.stream.MediaWikiClient = (function() {
                         continue;
                     }
                     image.url = image.url.replace('?', '%3F');
-                    image.thumb = this.shrinkImage(image, this.options.maxThumbWidth, 400);
-                    image.src = this.shrinkImage(image, this.options.maxImageWidth, 400);
+                    image.thumb = this.shrinkImage(image, this.options.maxThumbWidth);
+                    image.src = this.shrinkImage(image, this.options.maxImageWidth);
                 }
 
                 return data.filter(function(value) {
@@ -102,8 +121,14 @@ app.stream.MediaWikiClient = (function() {
                 });
             };
 
-            this.shrinkImage = function(image, maxWidth, decreaseBoundary) {
-                return image.width - decreaseBoundary < maxWidth ?
+            /**
+             *
+             * @param {Object} image
+             * @param maxWidth
+             * @returns {*|string|url|.ajaxSettings.url|.ajaxSettings.flatOptions.url|XML}
+             */
+            this.shrinkImage = function(image, maxWidth) {
+                return image.width - this.options.imageWidthThreshold < maxWidth ?
                     image.url :
                     image.url.replace(rootUrl, thumbUrl) + '/' + maxWidth + 'px-' + image.name;
             };

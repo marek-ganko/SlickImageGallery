@@ -1,5 +1,4 @@
 "use strict";
-var app = ns('app');
 
 /**
  * @param {String} namespacePath
@@ -15,18 +14,31 @@ function ns(namespacePath) {
     return namespace;
 }
 
-/**
- * @function app.extend
- * @param {Object} sourceObject
- * @param {Object} extendingObject
- * @returns {Object}
- */
-app.extend = function(sourceObject, extendingObject) {
-    for (var attrName in extendingObject) {
-        sourceObject[attrName] = extendingObject[attrName];
+var app = {
+
+    /**
+     * @param {Object} sourceObject
+     * @param {Object} extendingObject
+     * @returns {Object}
+     */
+    extend: function(sourceObject, extendingObject) {
+        for (var attrName in extendingObject) {
+            sourceObject[attrName] = extendingObject[attrName];
+        }
+        return sourceObject;
+    },
+
+    /**
+     * @param bytes
+     * @returns {string}
+     */
+    bytesToSize: function(bytes) {
+        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
+            i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+        return bytes ? (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i] : '0 Byte';
     }
-    return sourceObject;
 };
+
 
 /**
  * @callback Callback

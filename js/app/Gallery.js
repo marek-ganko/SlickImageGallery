@@ -31,6 +31,9 @@ app.Gallery = (function(){
             return this;
         };
 
+        /**
+         * Initialize gallery
+         */
         this.init = function() {
 
             // request for image urls
@@ -50,6 +53,9 @@ app.Gallery = (function(){
             });
         };
 
+        /**
+         * Creates gallery DOM element container
+         */
         this.createContainer = function() {
             this.container = document.createElement('div');
             this.container.setAttribute('id', 'Gallery');
@@ -65,6 +71,7 @@ app.Gallery = (function(){
         };
 
         /**
+         * Gets image list
          * @param {Callback} callback
          */
         this.getImages = function(callback) {
