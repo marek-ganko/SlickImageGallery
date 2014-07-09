@@ -150,7 +150,7 @@ app.ImagePreview = (function() {
             this.itemsContainer.innerHTML = '';
             jQuery(this.container).fadeIn();
             this.toggleListenScroll(false);
-            this.offset = -100;
+            this.offset = 0;
 
             // #Preview figure
             this.itemsContainer.appendChild(this.createView(image, function(error) {
@@ -279,7 +279,7 @@ app.ImagePreview = (function() {
             if (!this.isFirstImage) {
                 this.setCurrentImage(imageContainer.firstChild.firstChild);
 
-                this.setOffset(0);
+                this.setOffset(100);
 
                 this.getImages('prev', this.currentImage, 1, this.boundingImages, function(error, createdImages) {
                     if (error) {
