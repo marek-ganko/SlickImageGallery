@@ -279,7 +279,7 @@ app.ImagePreview = (function() {
             if (!this.isFirstImage) {
                 this.setCurrentImage(imageContainer.firstChild.firstChild);
 
-                this.setOffset(100);
+                this.setOffset(0);
 
                 this.getImages('prev', this.currentImage, 1, this.boundingImages, function(error, createdImages) {
                     if (error) {
