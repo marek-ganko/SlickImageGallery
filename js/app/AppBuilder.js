@@ -14,6 +14,11 @@ function ns(namespacePath) {
     return namespace;
 }
 
+
+/**
+ * Main application namespace
+ * @type {Object}
+ */
 var app = {
 
     /**
@@ -36,7 +41,10 @@ var app = {
         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
             i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         return bytes ? (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i] : '0 Byte';
-    }
+    },
+
+    isMobile: 'ontouchstart' in window
+
 };
 
 

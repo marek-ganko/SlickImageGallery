@@ -36,20 +36,18 @@ app.Gallery = (function(){
          */
         this.init = function() {
 
+            Image.init();
+            this.createContainer();
+
             // request for image urls
             Stream.init(function(error){
                 if (error) {
                     return Error.show(error);
                 }
 
-                Image.init();
-
-                _self.createContainer();
-
                 _self.getImages(function(error) {
                     return error && Error.show(error) || ImageLoader.listen().load();
                 });
-
             });
         };
 

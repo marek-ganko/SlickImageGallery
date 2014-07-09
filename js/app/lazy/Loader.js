@@ -52,7 +52,7 @@ app.lazy.Loader = function() {
     this.inViewport = function(element, callback) {
         var elementTop = element.getBoundingClientRect().top,
             screenHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
-            viewportTop = (document.documentElement.getBoundingClientRect().top * (-1));
+            viewportTop = Math.abs(document.documentElement.getBoundingClientRect().top);
 
         return elementTop + viewportTop > screenHeight + viewportTop + this.threshold || callback(null, element);
     };

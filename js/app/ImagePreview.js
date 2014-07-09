@@ -64,8 +64,7 @@ app.ImagePreview = (function() {
          * Creates prieview DOM container
          */
         this.createContainer = function() {
-            var closePreview = document.createElement('div'),
-                shortcutsInfo = document.createElement('div');
+            var closePreview = document.createElement('div');
 
             this.itemsContainer = document.createElement('ul');
             this.itemsContainer.setAttribute('id', 'previewItems');
@@ -74,20 +73,25 @@ app.ImagePreview = (function() {
             closePreview.onclick = function() {
                 _self.hide();
             };
-            shortcutsInfo.setAttribute('id', 'shortcutsInfo');
-            shortcutsInfo.innerHTML = 'Use shortcuts:<br>next: &rarr; or W<br>previous: &larr; or A<br>exit: Esc';
-            shortcutsInfo.onclick = function() {
-                shortcutsInfo.style.display = 'none';
-            };
 
             this.container = document.createElement('div');
             this.container.setAttribute('id', 'Preview');
             // #Preview #closePreview
             this.container.appendChild(closePreview);
-            // #Preview #shortcutsInfo
-            this.container.appendChild(shortcutsInfo);
+
             // #Preview ul
             this.container.appendChild(this.itemsContainer);
+
+            if (!app.isMobile) {
+                var shortcutsInfo = document.createElement('div');
+                shortcutsInfo.setAttribute('id', 'shortcutsInfo');
+                shortcutsInfo.innerHTML = 'Use shortcuts:<br>next: &rarr; or W<br>previous: &larr; or A<br>exit: Esc';
+                shortcutsInfo.onclick = function() {
+                    shortcutsInfo.style.display = 'none';
+                };
+                // #Preview #shortcutsInfo
+                this.container.appendChild(shortcutsInfo);
+            }
         };
 
         /**
@@ -133,7 +137,7 @@ app.ImagePreview = (function() {
          * Hide preview
          */
         this.hide = function() {
-            this.container.style.display = 'none';
+            jQuery(this.container).fadeOut();
             this.toggleListenScroll(true);
             this.stopListening();
         };
@@ -145,7 +149,7 @@ app.ImagePreview = (function() {
         this.show = function(image) {
             // clear all previous content
             this.itemsContainer.innerHTML = '';
-            this.container.style.display = 'block';
+            jQuery(this.container).fadeIn();
             this.toggleListenScroll(false);
             this.offset = 0;
 
@@ -259,6 +263,7 @@ app.ImagePreview = (function() {
                     _self.setOffset(100);
                 }
 
+                console.log(_self.currentImage);
                 // scroll
                 _self.scrollToImage(_self.currentImage);
             });
@@ -288,6 +293,8 @@ app.ImagePreview = (function() {
                     // move view to right by one page
                     _self.setOffset(-100 * createdImages);
 
+                    console.log(_self.currentImage);
+
                     // scroll
                     _self.scrollToImage(_self.currentImage);
                 });
@@ -310,8 +317,10 @@ app.ImagePreview = (function() {
          */
         this.scrollToImage = function(image) {
             var viewport = document.documentElement.getBoundingClientRect(),
-                imageOffset = image.getBoundingClientRect(),
-                vieportTop = (viewport.top * (-1));
+                imageOffset = image.parentNode.parentNode.getBoundingClientRect(),
+                vieportTop = Math.abs(viewport.top);
+
+            console.log(image.parentNode.parentNode, imageOffset.top, vieportTop, imageOffset.top + vieportTop);
 
             window.scrollTo(0, imageOffset.top + vieportTop);
         };
