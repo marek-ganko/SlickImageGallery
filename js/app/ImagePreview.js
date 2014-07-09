@@ -110,12 +110,11 @@ app.ImagePreview = (function() {
 
             imageContainer = imageContainer[slibling];
             while (imageContainer && imageContainer.getAttribute('class') == 'imgContainer' && i < limit + offset) {
-                ++i;
 
+                ++i;
                 if (offset > i - 1) {
                     continue;
                 }
-
                 if (imageContainer.nodeType == 1) {
                     var figure = this.createView(imageContainer.firstChild.firstChild);
                     if (dir == 'next') {
@@ -151,7 +150,7 @@ app.ImagePreview = (function() {
             this.itemsContainer.innerHTML = '';
             jQuery(this.container).fadeIn();
             this.toggleListenScroll(false);
-            this.offset = 0;
+            this.offset = -100;
 
             // #Preview figure
             this.itemsContainer.appendChild(this.createView(image, function(error) {
@@ -263,7 +262,6 @@ app.ImagePreview = (function() {
                     _self.setOffset(100);
                 }
 
-                console.log(_self.currentImage);
                 // scroll
                 _self.scrollToImage(_self.currentImage);
             });
@@ -293,8 +291,6 @@ app.ImagePreview = (function() {
                     // move view to right by one page
                     _self.setOffset(-100 * createdImages);
 
-                    console.log(_self.currentImage);
-
                     // scroll
                     _self.scrollToImage(_self.currentImage);
                 });
@@ -319,8 +315,6 @@ app.ImagePreview = (function() {
             var viewport = document.documentElement.getBoundingClientRect(),
                 imageOffset = image.parentNode.parentNode.getBoundingClientRect(),
                 vieportTop = Math.abs(viewport.top);
-
-            console.log(image.parentNode.parentNode, imageOffset.top, vieportTop, imageOffset.top + vieportTop);
 
             window.scrollTo(0, imageOffset.top + vieportTop);
         };
