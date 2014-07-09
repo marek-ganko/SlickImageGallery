@@ -1,89 +1,5 @@
+"use strict";
 (function(screen, window, document, $) {
-    "use strict";
-
-    /**
-     * Show error message
-     * @param {String} message
-     * @constructor
-     */
-    var ErrorMessage = function(message) {
-        var messageElement = document.getElementById('Message'),
-            galleryElement = document.getElementById('Gallery');
-
-        messageElement.innerHTML = message;
-        messageElement.style.display = 'block';
-        galleryElement.style.display = 'none';
-    };
-
-    /**
-     * Gallery - main initiating object
-     * @constructor
-     */
-    var Gallery = function() {
-        var self = this;
-        this.imageHelper = new Images();
-        this.lazyLoader = new LazyLoader();
-        this.imageStream = new MediaWikiClient(function(){
-            self.init();
-        });
-    };
-    Gallery.prototype = {
-        container: null,
-        bottomTriggerElement: null,
-        imageStream: null,
-        imageHelper: null,
-        lazyLoader: null,
-
-        init: function() {
-            var self = this,
-                lazyLoaderCalled = false;
-            this.createContainer();
-
-            this.getImages(function(err) {
-                if (err) {
-                    return new ErrorMessage(err);
-                }
-                if (!lazyLoaderCalled){
-                    self.lazyLoader.listenForImages();
-                    lazyLoaderCalled = true;
-                }
-                self.lazyLoader.loadThumbnail.call(self.lazyLoader);
-            });
-        },
-
-        createContainer: function() {
-            this.container = document.createElement('div');
-            this.container.setAttribute('id', 'Gallery');
-            this.bottomTriggerElement = document.createElement('div');
-            this.bottomTriggerElement.setAttribute('id', 'bottomTrigger');
-
-            // #Gallery #Images
-            this.container.appendChild(this.imageHelper.container);
-            // #Gallery #bottomTrigger
-            this.container.appendChild(this.bottomTriggerElement);
-            // body #Gallery
-            document.body.appendChild(this.container);
-        },
-
-        getImages: function(done) {
-            var self = this;
-
-            this.lazyLoader.listenForContent(
-                this.bottomTriggerElement,
-                function() {
-                    self.imageStream.getList(function(err, data) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        self.imageHelper.createList(data, function() {
-                            done();
-                        });
-                    })
-                }
-            );
-        }
-    };
 
     /**
      * Images handling
@@ -612,6 +528,13 @@
         }
     };
 
-    var gallery = new Gallery();
-
 })(screen, window, document, jQuery);
+
+
+document.onload = function() {
+    var App = new AppBuilder(),
+        Gallery = App.getGallery();
+
+    Gallery.init();
+
+};
