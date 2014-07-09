@@ -10,6 +10,7 @@ app.lazy.Loader = function() {
 
     this.threshold = 0;
     this.delay = 100;
+    this.isListening = false;
 
     /**
      * Implementation of listeners
@@ -26,6 +27,7 @@ app.lazy.Loader = function() {
     };
 
     /**
+     * Reduce
      * @param {Function} fn
      * @returns {Function}
      */

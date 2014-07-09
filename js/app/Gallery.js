@@ -9,33 +9,44 @@ app.Gallery = (function(){
     /**
      * @constructor
      * @param {app.Image} Image
-     * @param {app.stream.Abstract} Stream
+     * @param {app.stream.Adapter} Stream
      * @param {app.lazy.ImageLoader} ImageLoader
      * @param {app.lazy.ContentLoader} ContentLoader
+     * @param {app.Error} Error
      */
-    return function(Image, Stream, ImageLoader, ContentLoader) {
+    return function(Image, Stream, ImageLoader, ContentLoader, Error) {
+
+        var _self = this;
 
         this.container = null;
         this.bottomTriggerElement = null;
+        this.imagesLimitPerRequest = 100;
+
+        /**
+         * @param {Number} limit
+         * @returns {app.Gallery}
+         */
+        this.setImagesLimitPerRequest = function(limit) {
+            this.imagesLimitPerRequest = limit;
+            return this;
+        };
 
         this.init = function() {
 
-            var lazyLoaderCalled = false;
-
-            Image.init();
-
-            this.createContainer();
-
-            this.getImages(function(err) {
-                if (err) {
-                    return app.Error.show(err);
+            // request for image urls
+            Stream.init(function(error){
+                if (error) {
+                    return Error.show(error);
                 }
-                // @TODO - refactor - change naming and reorganize listeners
-                if (!lazyLoaderCalled){
-                    ImageLoader.listen();
-                    lazyLoaderCalled = true;
-                }
-                ImageLoader.load.call(ImageLoader);
+
+                Image.init();
+
+                _self.createContainer();
+
+                _self.getImages(function(error) {
+                    return error && Error.show(error) || ImageLoader.listen().load();
+                });
+
             });
         };
 
@@ -57,14 +68,15 @@ app.Gallery = (function(){
          * @param {Callback} callback
          */
         this.getImages = function(callback) {
-            ContentLoader.listen(
-                this.bottomTriggerElement,
-                function() {
-                    Stream.getList(function(error, data) {
+            ContentLoader
+                .setElementToTracking(this.bottomTriggerElement)
+                .setCallback(function() {
+                    Stream.getList(_self.imagesLimitPerRequest, function(error, data) {
                         return error && callback(error) || Image.createList(data, callback)
                     })
-                }
-            );
+                })
+                .listen()
+                .load();
         };
     };
 })();

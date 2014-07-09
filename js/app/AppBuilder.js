@@ -6,7 +6,9 @@ var app = ns('app');
  * @returns {{}}
  */
 function ns(namespacePath) {
-    var parts = namespacePath.split('.'), namespace = {};
+    var parts = namespacePath.split('.'),
+        namespace = window[parts.shift()] || {};
+
     for (var i  in parts) {
         namespace[parts[i]] = namespace[parts[i]] || {};
     }
@@ -55,16 +57,28 @@ var AppBuilder = (function() {
             return new app.lazy.ContentLoader();
         };
         /**
+         * @returns {app.Error}
+         */
+        this.getError = function() {
+            return new app.Error();
+        };
+        /**
          * @returns {app.Gallery}
          */
         this.getGallery = function() {
-            return new app.Gallery(this.getImage(), this.getStreamAdapter(), this.getImageLoader(), this.getContentLoader());
+            return new app.Gallery(this.getImage(), this.getStreamAdapter(), this.getImageLoader(), this.getContentLoader(), this.getError());
+        };
+        /**
+         * @returns {app.ImagePreview}
+         */
+        this.getImagePreview = function() {
+            return new app.ImagePreview();
         };
         /**
          * @returns {app.Image}
          */
         this.getImage = function() {
-            return new app.Image();
+            return new app.Image(this.getImagePreview());
         };
         /**
          * @returns {app.stream.Adapter}
@@ -76,13 +90,13 @@ var AppBuilder = (function() {
          * @returns {app.stream.Ajax}
          */
         this.getAjax = function() {
-            return new app.Ajax();
+            return new app.stream.Ajax();
         };
         /**
          * @returns {app.stream.MediaWikiClient}
          */
         this.getMediaWikiClient = function() {
-            return new app.MediaWikiClient(this.getAjax());
+            return new app.stream.MediaWikiClient(this.getAjax());
         };
     };
 })();

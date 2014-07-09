@@ -12,7 +12,7 @@ app.stream.Adapter = (function(){
      */
     return function(Stream) {
 
-        if (!Stream instanceof app.stream.Abstract) {
+        if (!(Stream instanceof app.stream.Abstract)) {
             throw new Error('Wrong Stream Object');
         }
 

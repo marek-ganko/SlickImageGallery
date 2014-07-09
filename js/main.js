@@ -1,10 +1,8 @@
 "use strict";
 
-document.onload = function() {
-
+(function() {
     var App = new AppBuilder(),
         Gallery = App.getGallery();
 
-    Gallery.init();
-
-};
+    Gallery.setImagesLimitPerRequest(120).init();
+})();

@@ -16,6 +16,7 @@ app.Image = (function(){
         this.list = [];
 
         this.init = function() {
+            ImagePreview.init();
             this.createContainer();
         };
 
@@ -26,12 +27,16 @@ app.Image = (function(){
             this.container.appendChild(ImagePreview.container);
         };
 
-        this.createList = function(images, done) {
+        /**
+         * @param {Array} images
+         * @param {Callback} callback
+         */
+        this.createList = function(images, callback) {
             for (var i in images) {
                 // #Images .imgContainer
                 this.container.appendChild(this.create(images[i]));
             }
-            done();
+            callback(null);
         };
 
         this.create = function(image) {

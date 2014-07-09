@@ -16,16 +16,11 @@ app.stream.Ajax = (function(){
          * @param {Callback} callback
          */
         this.get = function(data, callback) {
-
             jQuery.ajax(data).done(function(data){
                 return callback(null, data);
             }).fail(function(jqXHR, textStatus, errorThrown){
                 return callback('Error requesting ajax response: ' + errorThrown)
             });
-
-//                $.getJSON(this.buildQuery(url, app.extend(listQueryParams, {ailimit: limit})), function(data) {
-//                    _self.parseResults(data, callback);
-//                });
         };
     };
 })();
