@@ -14,6 +14,19 @@ function ns(namespacePath) {
 }
 
 /**
+ * @function app.extend
+ * @param {Object} sourceObject
+ * @param {Object} extendingObject
+ * @returns {Object}
+ */
+app.extend = function(sourceObject, extendingObject) {
+    for (var attrName in extendingObject) {
+        sourceObject[attrName] = extendingObject[attrName];
+    }
+    return sourceObject;
+};
+
+/**
  * @callback Callback
  * @param {String} error
  * @param {*} data
@@ -66,16 +79,10 @@ var AppBuilder = (function() {
             return new app.Ajax();
         };
         /**
-         * @returns {Screen}
-         */
-        this.getScreen = function() {
-            return screen;
-        };
-        /**
          * @returns {app.stream.MediaWikiClient}
          */
         this.getMediaWikiClient = function() {
-            return new app.MediaWikiClient(this.getScreen(), this.getAjax());
+            return new app.MediaWikiClient(this.getAjax());
         };
     };
 })();

@@ -20,8 +20,8 @@ app.stream.Adapter = (function(){
             Stream.init(callback);
         };
 
-        this.getList = function(offset, limit, callback) {
-            Stream.getList(offset, limit, callback);
+        this.getList = function(limit, callback) {
+            Stream.getList(limit, callback);
         };
 
     };

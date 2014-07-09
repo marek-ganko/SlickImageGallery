@@ -19,7 +19,10 @@ app.Gallery = (function(){
         this.bottomTriggerElement = null;
 
         this.init = function() {
+
             var lazyLoaderCalled = false;
+
+            Image.init();
 
             this.createContainer();
 
@@ -64,5 +67,4 @@ app.Gallery = (function(){
             );
         };
     };
-
 })();

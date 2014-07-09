@@ -14,11 +14,10 @@ app.stream.Abstract = function() {
     };
 
     /**
-     * @param offset
      * @param limit
      * @param callback
      */
-    this.getList = function(offset, limit, callback) {
+    this.getList = function(limit, callback) {
         throw new Error('Method getList not implemented');
     };
 };

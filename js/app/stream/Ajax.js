@@ -6,24 +6,26 @@ var app = ns('app.stream');
  */
 app.stream.Ajax = (function(){
 
-    function xhrRequest(data, callback, error) {
-
-        var errorMessage = 'Error';
-        error(errorMessage);
-    }
-
     /**
      * @constructor
      */
     return function() {
+
+        /**
+         * @param {Object} data
+         * @param {Callback} callback
+         */
         this.get = function(data, callback) {
 
-            xhrRequest(data, function(){
-                return callback();
-            },function(errorMessage){
-                return callback(errorMessage);
+            jQuery.ajax(data).done(function(data){
+                return callback(null, data);
+            }).fail(function(jqXHR, textStatus, errorThrown){
+                return callback('Error requesting ajax response: ' + errorThrown)
             });
 
+//                $.getJSON(this.buildQuery(url, app.extend(listQueryParams, {ailimit: limit})), function(data) {
+//                    _self.parseResults(data, callback);
+//                });
         };
     };
 })();
