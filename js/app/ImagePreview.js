@@ -106,15 +106,18 @@ app.ImagePreview = (function() {
             var slibling = dir == 'next' ? 'nextSibling' : 'previousSibling',
                 imageContainer = currentImage.parentNode.parentNode,
                 i = 0,
-                createdImages = 0;
+                createdImages = 0,
+                limitRange = limit + offset;
 
-            imageContainer = imageContainer[slibling];
-            while (imageContainer && imageContainer.getAttribute('class') == 'imgContainer' && i < limit + offset) {
+            while (i < limitRange) {
 
-                ++i;
-                if (offset > i - 1) {
+                imageContainer = imageContainer[slibling];
+
+                if (i < offset || !(imageContainer && imageContainer.getAttribute('class') == 'imgContainer')) {
+                    ++i;
                     continue;
                 }
+
                 if (imageContainer.nodeType == 1) {
                     var figure = this.createView(imageContainer.firstChild.firstChild);
                     if (dir == 'next') {
@@ -127,7 +130,7 @@ app.ImagePreview = (function() {
                     }
                     ++createdImages;
                 }
-                imageContainer = imageContainer[slibling];
+                ++i;
             }
             typeof callback === 'function' && callback(null, createdImages);
         };
@@ -153,26 +156,21 @@ app.ImagePreview = (function() {
             this.offset = 0;
 
             // #Preview figure
-            this.itemsContainer.appendChild(this.createView(image, function(error) {
-                if (error) {
-                    return error;
-                }
-                _self.currentImage = image;
-                _self.startListening();
-                _self.getImages('next', image, _self.boundingImages, 0);
-                _self.getImages('prev', image, _self.boundingImages, 0, function(error, createdImages) {
-                    return error || _self.setOffset(-100 * createdImages);
-                });
-            }));
+            this.itemsContainer.appendChild(this.createView(image));
+            this.currentImage = image;
+            this.startListening();
+            this.getImages('next', image, this.boundingImages, 0);
+            this.getImages('prev', image, this.boundingImages, 0, function(error, createdImages) {
+                return error || _self.setOffset(-100 * createdImages);
+            });
         };
 
         /**
          * Creates preview DOM elements
          * @param {HTMLElement} image
-         * @param {Callback} callback
          * @returns {HTMLElement}
          */
-        this.createView = function(image, callback) {
+        this.createView = function(image) {
             var sourceLink = document.createElement('a'),
                 viewElement = document.createElement('li'),
                 figureElement = document.createElement('figure'),
@@ -182,9 +180,7 @@ app.ImagePreview = (function() {
                 next = document.createElement('div'),
                 previous = document.createElement('div');
 
-            figureElement.setAttribute('class', 'blank');
-
-            imageContainer.setAttribute('class', 'bigImageContainer');
+            imageContainer.setAttribute('class', 'bigImageContainer blank');
             next.setAttribute('class', 'icon next');
             next.onclick = function() {
                 _self.showNext();
@@ -207,13 +203,11 @@ app.ImagePreview = (function() {
             figcaptionElement.appendChild(sourceLink);
 
             imageElement.onload = function() {
-                figureElement.removeAttribute('class');
-                typeof callback === 'function' && callback(null);
+                imageContainer.setAttribute('class', 'bigImageContainer');
             };
             imageElement.onerror = function() {
                 figureElement.innerHTML = '';
                 figureElement.setAttribute('class', figureElement.getAttribute('class').replace('blank', 'broken'));
-                typeof callback === 'function' && callback(null);
             };
 
             imageElement.setAttribute('src', image.getAttribute('data-src'));
@@ -251,7 +245,7 @@ app.ImagePreview = (function() {
 
             this.setOffset(-100);
 
-            this.getImages('next', this.currentImage, 1, this.boundingImages, function(error) {
+            this.getImages('next', this.currentImage, 1, this.boundingImages - 1, function(error) {
                 if (error) {
                     return error;
                 }
@@ -281,7 +275,7 @@ app.ImagePreview = (function() {
 
                 this.setOffset(100);
 
-                this.getImages('prev', this.currentImage, 1, this.boundingImages, function(error, createdImages) {
+                this.getImages('prev', this.currentImage, 1, this.boundingImages - 1, function(error, createdImages) {
                     if (error) {
                         return error;
                     }
@@ -339,7 +333,7 @@ app.ImagePreview = (function() {
          */
         this.toggleListenScroll = function(on) {
             if (on) {
-                document.ontouchmove = function(e) {
+                document.ontouchmove = function() {
                     return true;
                 };
                 document.body.style.overflow = '';

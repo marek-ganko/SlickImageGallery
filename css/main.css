@@ -71,6 +71,7 @@ a:focus {
     display: inline-block;
     text-align: center;
     vertical-align: middle;
+    width: 20%;
 }
 
 .blank {
@@ -162,7 +163,7 @@ a:focus {
 #Preview figure {
     width: 80%;
     height: 100%;
-    margin: 20px auto;
+    margin: 0 auto;
 }
 
 #Preview img {
@@ -173,6 +174,7 @@ a:focus {
 }
 
 #Preview figcaption {
+    font-size: 1em;
     padding: 5px;
     text-align: center;
 }
@@ -220,20 +222,27 @@ a:focus {
     padding: 10px;
 }
 
+/* Message */
+
+#Message {
+    display: none;
+    font-size: 1.5em;
+    width: 100%;
+    position: fixed;
+    top: 50%;
+    text-align: center;
+    background: #000;
+}
+
 /* Media specific styles */
 
 @media only screen
-and (min-width : 321px) {
-    .imgContainer {
-        width: 20%;
-        min-height: 70px;
-    }
-}
-
-@media only screen
 and (max-width : 320px) {
+    body {
+        font-size: 0.7em;
+    }
     .imgContainer {
-        width: 25%;
+        width: 26%;
         min-height: 70px;
     }
 }
@@ -259,21 +268,43 @@ and (orientation : portrait) {
 }
 
 @media only screen
+and (min-width: 400px)
+and (max-width : 599px){
+    .imgContainer {
+        width: 40%;
+        min-height: 50px;
+    }
+}
+
+@media only screen
+and (min-width : 321px)
+and (max-width : 569px)
+and (orientation : landscape) {
+    body {
+        font-size: 0.7em;
+    }
+    #Preview figcaption {
+        font-size: 0.5em;
+    }
+    .imgContainer {
+        width: 20%;
+        min-height: 50px;
+    }
+}
+
+@media only screen
+and (min-width: 600px)
+and (max-width : 800px){
+    .imgContainer {
+        width: 21%;
+        min-height: 100px;
+    }
+}
+
+@media only screen
 and (min-width: 1224px) {
     .imgContainer {
         width: 17%;
         min-height: 200px;
     }
-}
-
-/* Message */
-
-#Message {
-    display: none;
-    font-size: 1.5em;
-    width: 100%;
-    position: fixed;
-    top: 50%;
-    text-align: center;
-    background: #000;
 }
