@@ -92,7 +92,7 @@ var AppBuilder = (function () {
          * @returns {app.ImagePreview}
          */
         this.getImagePreview = function () {
-            return new app.ImagePreview();
+            return new app.ImagePreview(jQuery);
         };
         /**
          * @returns {app.Image}

@@ -71,8 +71,8 @@ app.Image = (function (document) {
 
             this.list.push(imageElement);
 
-            link.onclick = function (e) {
-                e.preventDefault();
+            link.onclick = function (event) {
+                event.preventDefault();
                 ImagePreview.show.call(ImagePreview, imageElement);
             };
 

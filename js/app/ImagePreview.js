@@ -8,8 +8,9 @@ app.ImagePreview = (function (window, document) {
 
     /**
      * @constructor
+     * @param {jQuery} jQuery
      */
-    return function () {
+    return function (jQuery) {
 
         var _self = this;
 
@@ -29,19 +30,19 @@ app.ImagePreview = (function (window, document) {
 
         /**
          * listeners for preview control
-         * @param {EventTarget} e
+         * @param {EventTarget} event
          */
-        this.listeners = function (e) {
+        this.listeners = function (event) {
             // close on ESC
-            if (e.keyCode == 27) {
+            if (event.keyCode == 27) {
                 _self.hide();
             }
             // show previous picture on left and A
-            if (e.keyCode == 37 || e.keyCode == 65) {
+            if (event.keyCode == 37 || event.keyCode == 65) {
                 _self.showPrevious();
             }
             // show next picture on right and D
-            if (e.keyCode == 39 || e.keyCode == 68) {
+            if (event.keyCode == 39 || event.keyCode == 68) {
                 _self.showNext();
             }
         };
@@ -339,12 +340,12 @@ app.ImagePreview = (function (window, document) {
                 };
                 document.body.style.overflow = '';
             } else {
-                document.ontouchmove = function (e) {
-                    e.preventDefault();
+                document.ontouchmove = function (event) {
+                    event.preventDefault();
                     return false;
                 };
                 document.body.style.overflow = 'hidden';
             }
-        }
+        };
     };
 })(window, document);
