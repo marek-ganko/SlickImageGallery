@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * @param {String} namespacePath
@@ -26,7 +26,7 @@ var app = {
      * @param {Object} extendingObject
      * @returns {Object}
      */
-    extend: function(sourceObject, extendingObject) {
+    extend: function (sourceObject, extendingObject) {
         for (var attrName in extendingObject) {
             sourceObject[attrName] = extendingObject[attrName];
         }
@@ -37,7 +37,7 @@ var app = {
      * @param bytes
      * @returns {string}
      */
-    bytesToSize: function(bytes) {
+    bytesToSize: function (bytes) {
         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
             i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         return bytes ? (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i] : '0 Byte';
@@ -57,65 +57,65 @@ var app = {
 /**
  * @class AppBuilder
  */
-var AppBuilder = (function() {
+var AppBuilder = (function () {
 
     /**
      * @constructor
      */
-    return function() {
+    return function () {
 
         /**
          * @returns {app.lazy.ImageLoader}
          */
-        this.getImageLoader = function() {
+        this.getImageLoader = function () {
             return new app.lazy.ImageLoader();
         };
         /**
          * @returns {app.lazy.ContentLoader}
          */
-        this.getContentLoader = function() {
+        this.getContentLoader = function () {
             return new app.lazy.ContentLoader();
         };
         /**
          * @returns {app.Error}
          */
-        this.getError = function() {
+        this.getError = function () {
             return new app.Error();
         };
         /**
          * @returns {app.Gallery}
          */
-        this.getGallery = function() {
+        this.getGallery = function () {
             return new app.Gallery(this.getImage(), this.getStreamAdapter(), this.getImageLoader(), this.getContentLoader(), this.getError());
         };
         /**
          * @returns {app.ImagePreview}
          */
-        this.getImagePreview = function() {
+        this.getImagePreview = function () {
             return new app.ImagePreview();
         };
         /**
          * @returns {app.Image}
          */
-        this.getImage = function() {
+        this.getImage = function () {
             return new app.Image(this.getImagePreview());
         };
         /**
          * @returns {app.stream.Adapter}
          */
-        this.getStreamAdapter = function() {
+        this.getStreamAdapter = function () {
             return new app.stream.Adapter(this.getMediaWikiClient());
         };
         /**
          * @returns {app.stream.Ajax}
          */
-        this.getAjax = function() {
+        this.getAjax = function () {
             return new app.stream.Ajax();
         };
         /**
          * @returns {app.stream.MediaWikiClient}
          */
-        this.getMediaWikiClient = function() {
+        this.getMediaWikiClient = function () {
             return new app.stream.MediaWikiClient(this.getAjax());
         };
     };

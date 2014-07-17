@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 var app = ns('app.lazy');
 
 /**
  * @class app.lazy.Loader
  */
-app.lazy.Loader = function() {
+app.lazy.Loader = function (document) {
 
     var _self = this;
 
@@ -15,14 +15,14 @@ app.lazy.Loader = function() {
     /**
      * Implementation of listeners
      */
-    this.listen = function() {
+    this.listen = function () {
         throw new Error('Method listen not implemented');
     };
 
     /**
      * Implementation of load
      */
-    this.load = function() {
+    this.load = function () {
         throw new Error('Method load not implemented');
     };
 
@@ -31,13 +31,13 @@ app.lazy.Loader = function() {
      * @param {Function} fn
      * @returns {Function}
      */
-    this.debounce = function(fn) {
+    this.debounce = function (fn) {
         var timer = null;
-        return function() {
+        return function () {
             var self = this,
                 args = arguments;
             clearTimeout(timer);
-            timer = setTimeout(function() {
+            timer = setTimeout(function () {
                 fn.apply(self, args);
             }, _self.delay);
         };
@@ -49,7 +49,7 @@ app.lazy.Loader = function() {
      * @param {Callback} callback
      * @returns {boolean|*}
      */
-    this.inViewport = function(element, callback) {
+    this.inViewport = function (element, callback) {
         var elementTop = element.getBoundingClientRect().top,
             screenHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
             viewportTop = Math.abs(document.documentElement.getBoundingClientRect().top);

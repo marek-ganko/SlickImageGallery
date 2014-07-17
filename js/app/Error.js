@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 var app = ns('app');
 
 /**
  * @class app.Error
  */
-app.Error = (function(){
+app.Error = (function (document) {
 
     /**
      * @constructor
      */
-    return function() {
+    return function () {
 
         /**
          * Show error message
          * @param {String} message
          */
-        this.show = function(message) {
+        this.show = function (message) {
             var messageElement = document.getElementById('Message'),
                 galleryElement = document.getElementById('Gallery');
 
@@ -24,4 +24,4 @@ app.Error = (function(){
             galleryElement.style.display = 'none';
         };
     };
-})();
+})(document);

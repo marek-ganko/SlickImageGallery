@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 var app = ns('app.stream');
 
 /**
  * @class app.stream.MediaWikiClient
  */
-app.stream.MediaWikiClient = (function() {
+app.stream.MediaWikiClient = (function (screen) {
 
     var maxLimit = 500,
         url = 'http://en.wikipedia.org/w/api.php?action=query&format=json',
@@ -26,8 +26,8 @@ app.stream.MediaWikiClient = (function() {
      * @constructor
      * @param {app.stream.Ajax} Ajax
      */
-    return function(Ajax) {
-        var constructor = function(Ajax) {
+    return function (Ajax) {
+        var constructor = function (Ajax) {
 
             var _self = this;
 
@@ -40,7 +40,7 @@ app.stream.MediaWikiClient = (function() {
             /**
              * @param {Callback} callback
              */
-            this.init = function(callback) {
+            this.init = function (callback) {
                 this.setImageUrl(callback);
             };
 
@@ -48,12 +48,12 @@ app.stream.MediaWikiClient = (function() {
              * Sets urls for thumbUrl and rootUrl
              * @param {Callback} callback
              */
-            this.setImageUrl = function(callback) {
+            this.setImageUrl = function (callback) {
                 Ajax.get({
                     url: url,
                     dataType: 'jsonp',
                     data: infoQueryParams
-                }, function(error, data) {
+                }, function (error, data) {
                     thumbUrl = data.query && data.query.repos && data.query.repos[1] && data.query.repos[1].thumbUrl || '';
                     rootUrl = data.query && data.query.repos && data.query.repos[1] && data.query.repos[1].rootUrl || '';
                     return error && callback(error) || callback(null);
@@ -65,13 +65,13 @@ app.stream.MediaWikiClient = (function() {
              * @param {Number} limit
              * @param {Callback} callback
              */
-            this.getList = function(limit, callback) {
+            this.getList = function (limit, callback) {
                 limit = limit > maxLimit ? maxLimit : limit;
                 Ajax.get({
                     url: url,
                     dataType: 'jsonp',
                     data: app.extend(listQueryParams, {ailimit: limit})
-                }, function(error, data) {
+                }, function (error, data) {
                     return error && callback(error) || _self.validateResults(data, callback);
                 });
             };
@@ -82,7 +82,7 @@ app.stream.MediaWikiClient = (function() {
              * @param {Callback} callback
              * @returns {*}
              */
-            this.validateResults = function(data, callback) {
+            this.validateResults = function (data, callback) {
                 if (data.error && data.error.info) {
                     return callback('Error from MediaWiki: <br>' + data.error.info);
                 }
@@ -98,7 +98,7 @@ app.stream.MediaWikiClient = (function() {
              * @param {Array} data
              * @returns {Array}
              */
-            this.filterImages = function(data) {
+            this.filterImages = function (data) {
                 for (var i in data) {
                     var image = data[i];
                     if (
@@ -116,7 +116,7 @@ app.stream.MediaWikiClient = (function() {
                     image.src = this.shrinkImage(image, this.options.maxImageWidth);
                 }
 
-                return data.filter(function(value) {
+                return data.filter(function (value) {
                     return value;
                 });
             };
@@ -127,7 +127,7 @@ app.stream.MediaWikiClient = (function() {
              * @param maxWidth
              * @returns {*|string|url|.ajaxSettings.url|.ajaxSettings.flatOptions.url|XML}
              */
-            this.shrinkImage = function(image, maxWidth) {
+            this.shrinkImage = function (image, maxWidth) {
                 return image.width - this.options.imageWidthThreshold < maxWidth ?
                     image.url :
                     image.url.replace(rootUrl, thumbUrl) + '/' + maxWidth + 'px-' + image.name;
@@ -137,4 +137,4 @@ app.stream.MediaWikiClient = (function() {
         constructor.prototype = new app.stream.Abstract();
         return new constructor(Ajax);
     };
-})();
+})(screen);

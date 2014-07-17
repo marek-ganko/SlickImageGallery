@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 var app = ns('app');
 
 /**
  * @class app.Image
  */
-app.Image = (function(){
+app.Image = (function (document) {
 
     /**
      * @constructor
      * @param {app.ImagePreview} ImagePreview
      */
-    return function(ImagePreview) {
+    return function (ImagePreview) {
 
         this.container = null;
         this.list = [];
@@ -18,7 +18,7 @@ app.Image = (function(){
         /**
          * Initialize Image object
          */
-        this.init = function() {
+        this.init = function () {
             ImagePreview.init();
             this.createContainer();
         };
@@ -26,7 +26,7 @@ app.Image = (function(){
         /**
          * Creates DOM element container for images
          */
-        this.createContainer = function() {
+        this.createContainer = function () {
             this.container = document.createElement('div');
             this.container.setAttribute('id', 'Images');
             // #Images #Preview
@@ -38,7 +38,7 @@ app.Image = (function(){
          * @param {Array} images
          * @param {Callback} callback
          */
-        this.createList = function(images, callback) {
+        this.createList = function (images, callback) {
             for (var i in images) {
                 // #Images .imgContainer
                 this.container.appendChild(this.create(images[i]));
@@ -51,7 +51,7 @@ app.Image = (function(){
          * @param {Object} image
          * @returns {HTMLElement}
          */
-        this.create = function(image) {
+        this.create = function (image) {
             var imageContainer = document.createElement('div'),
                 link = document.createElement('a'),
                 imageElement = new Image(),
@@ -71,7 +71,7 @@ app.Image = (function(){
 
             this.list.push(imageElement);
 
-            link.onclick = function(e) {
+            link.onclick = function (e) {
                 e.preventDefault();
                 ImagePreview.show.call(ImagePreview, imageElement);
             };
@@ -83,4 +83,4 @@ app.Image = (function(){
             return imageContainer;
         };
     };
-})();
+})(document);

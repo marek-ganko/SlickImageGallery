@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 var app = ns('app');
 
 /**
  * @class app.ImagePreview
  */
-app.ImagePreview = (function() {
+app.ImagePreview = (function (window, document) {
 
     /**
      * @constructor
      */
-    return function() {
+    return function () {
 
         var _self = this;
 
@@ -23,7 +23,7 @@ app.ImagePreview = (function() {
         /**
          * Initialize preview
          */
-        this.init = function() {
+        this.init = function () {
             this.createContainer();
         };
 
@@ -31,7 +31,7 @@ app.ImagePreview = (function() {
          * listeners for preview control
          * @param {EventTarget} e
          */
-        this.listeners = function(e) {
+        this.listeners = function (e) {
             // close on ESC
             if (e.keyCode == 27) {
                 _self.hide();
@@ -49,28 +49,28 @@ app.ImagePreview = (function() {
         /**
          * Adds liteners
          */
-        this.startListening = function() {
+        this.startListening = function () {
             window.addEventListener('keyup', this.listeners, false);
         };
 
         /**
          * Removes listeners
          */
-        this.stopListening = function() {
+        this.stopListening = function () {
             window.removeEventListener('keyup', this.listeners, false);
         };
 
         /**
          * Creates prieview DOM container
          */
-        this.createContainer = function() {
+        this.createContainer = function () {
             var closePreview = document.createElement('div');
 
             this.itemsContainer = document.createElement('ul');
             this.itemsContainer.setAttribute('id', 'previewItems');
             closePreview.setAttribute('id', 'closePreview');
             closePreview.setAttribute('class', 'icon');
-            closePreview.onclick = function() {
+            closePreview.onclick = function () {
                 _self.hide();
             };
 
@@ -86,7 +86,7 @@ app.ImagePreview = (function() {
                 var shortcutsInfo = document.createElement('div');
                 shortcutsInfo.setAttribute('id', 'shortcutsInfo');
                 shortcutsInfo.innerHTML = 'Use shortcuts:<br>next: &rarr; or W<br>previous: &larr; or A<br>exit: Esc';
-                shortcutsInfo.onclick = function() {
+                shortcutsInfo.onclick = function () {
                     shortcutsInfo.style.display = 'none';
                 };
                 // #Preview #shortcutsInfo
@@ -102,12 +102,13 @@ app.ImagePreview = (function() {
          * @param {Number} offset
          * @param {Callback} callback
          */
-        this.getImages = function(dir, currentImage, limit, offset, callback) {
+        this.getImages = function (dir, currentImage, limit, offset, callback) {
             var slibling = dir == 'next' ? 'nextSibling' : 'previousSibling',
                 imageContainer = currentImage.parentNode.parentNode,
                 i = 0,
                 createdImages = 0,
-                limitRange = limit + offset;
+                limitRange = limit + offset,
+                figure;
 
             while (i < limitRange) {
 
@@ -119,7 +120,7 @@ app.ImagePreview = (function() {
                 }
 
                 if (imageContainer.nodeType == 1) {
-                    var figure = this.createView(imageContainer.firstChild.firstChild);
+                    figure = this.createView(imageContainer.firstChild.firstChild);
                     if (dir == 'next') {
                         // ul:after li
                         this.itemsContainer.appendChild(figure);
@@ -138,7 +139,7 @@ app.ImagePreview = (function() {
         /**
          * Hide preview
          */
-        this.hide = function() {
+        this.hide = function () {
             jQuery(this.container).fadeOut();
             this.toggleListenScroll(true);
             this.stopListening();
@@ -148,7 +149,7 @@ app.ImagePreview = (function() {
          * Show preview
          * @param {HTMLElement} image
          */
-        this.show = function(image) {
+        this.show = function (image) {
             // clear all previous content
             this.itemsContainer.innerHTML = '';
             jQuery(this.container).fadeIn();
@@ -160,7 +161,7 @@ app.ImagePreview = (function() {
             this.currentImage = image;
             this.startListening();
             this.getImages('next', image, this.boundingImages, 0);
-            this.getImages('prev', image, this.boundingImages, 0, function(error, createdImages) {
+            this.getImages('prev', image, this.boundingImages, 0, function (error, createdImages) {
                 return error || _self.setOffset(-100 * createdImages);
             });
         };
@@ -170,7 +171,7 @@ app.ImagePreview = (function() {
          * @param {HTMLElement} image
          * @returns {HTMLElement}
          */
-        this.createView = function(image) {
+        this.createView = function (image) {
             var sourceLink = document.createElement('a'),
                 viewElement = document.createElement('li'),
                 figureElement = document.createElement('figure'),
@@ -182,14 +183,14 @@ app.ImagePreview = (function() {
 
             imageContainer.setAttribute('class', 'bigImageContainer blank');
             next.setAttribute('class', 'icon next');
-            next.onclick = function() {
+            next.onclick = function () {
                 _self.showNext();
             };
             // .bigImageContainer .next
             imageContainer.appendChild(next);
 
             previous.setAttribute('class', 'icon previous');
-            previous.onclick = function() {
+            previous.onclick = function () {
                 _self.showPrevious();
             };
             // .bigImageContainer .previous
@@ -202,10 +203,10 @@ app.ImagePreview = (function() {
             figcaptionElement.innerHTML = image.getAttribute('data-size') + '<br>';
             figcaptionElement.appendChild(sourceLink);
 
-            imageElement.onload = function() {
+            imageElement.onload = function () {
                 imageContainer.setAttribute('class', 'bigImageContainer');
             };
-            imageElement.onerror = function() {
+            imageElement.onerror = function () {
                 figureElement.innerHTML = '';
                 figureElement.setAttribute('class', figureElement.getAttribute('class').replace('blank', 'broken'));
             };
@@ -228,7 +229,7 @@ app.ImagePreview = (function() {
          * Set style offset of container
          * @param {Number} offset
          */
-        this.setOffset = function(offset) {
+        this.setOffset = function (offset) {
             this.offset += offset;
             this.itemsContainer.style.left = this.offset + '%';
         };
@@ -236,7 +237,7 @@ app.ImagePreview = (function() {
         /**
          * Show next image
          */
-        this.showNext = function() {
+        this.showNext = function () {
             var imageContainer = this.currentImage.parentNode.parentNode,
                 wasFirst = this.isFirstImage;
 
@@ -245,7 +246,7 @@ app.ImagePreview = (function() {
 
             this.setOffset(-100);
 
-            this.getImages('next', this.currentImage, 1, this.boundingImages - 1, function(error) {
+            this.getImages('next', this.currentImage, 1, this.boundingImages - 1, function (error) {
                 if (error) {
                     return error;
                 }
@@ -264,7 +265,7 @@ app.ImagePreview = (function() {
         /**
          * Show previous image
          */
-        this.showPrevious = function() {
+        this.showPrevious = function () {
             var imageContainer = this.currentImage.parentNode.parentNode;
 
             imageContainer = imageContainer.previousSibling;
@@ -275,7 +276,7 @@ app.ImagePreview = (function() {
 
                 this.setOffset(100);
 
-                this.getImages('prev', this.currentImage, 1, this.boundingImages - 1, function(error, createdImages) {
+                this.getImages('prev', this.currentImage, 1, this.boundingImages - 1, function (error, createdImages) {
                     if (error) {
                         return error;
                     }
@@ -295,7 +296,7 @@ app.ImagePreview = (function() {
          * Set current visible image
          * @param {HTMLElement} image
          */
-        this.setCurrentImage = function(image) {
+        this.setCurrentImage = function (image) {
             var containerClass = image.parentNode && image.parentNode.parentNode && image.parentNode.parentNode.getAttribute('class');
             this.currentImage = image;
             this.isFirstImage = containerClass != 'imgContainer';
@@ -305,7 +306,7 @@ app.ImagePreview = (function() {
          * Scroll window to passed image top
          * @param {HTMLElement} image
          */
-        this.scrollToImage = function(image) {
+        this.scrollToImage = function (image) {
             var viewport = document.documentElement.getBoundingClientRect(),
                 imageOffset = image.parentNode.parentNode.getBoundingClientRect(),
                 vieportTop = Math.abs(viewport.top);
@@ -316,14 +317,14 @@ app.ImagePreview = (function() {
         /**
          * Remove first image with its container
          */
-        this.removeFirst = function() {
+        this.removeFirst = function () {
             this.itemsContainer.removeChild(this.itemsContainer.firstChild);
         };
 
         /**
          * Remove last image with its container
          */
-        this.removeLast = function() {
+        this.removeLast = function () {
             this.itemsContainer.removeChild(this.itemsContainer.lastChild);
         };
 
@@ -331,14 +332,14 @@ app.ImagePreview = (function() {
          * Toggle Listener on Scroll - mobile mainly
          * @param {Boolean} on
          */
-        this.toggleListenScroll = function(on) {
+        this.toggleListenScroll = function (on) {
             if (on) {
-                document.ontouchmove = function() {
+                document.ontouchmove = function () {
                     return true;
                 };
                 document.body.style.overflow = '';
             } else {
-                document.ontouchmove = function(e) {
+                document.ontouchmove = function (e) {
                     e.preventDefault();
                     return false;
                 };
@@ -346,4 +347,4 @@ app.ImagePreview = (function() {
             }
         }
     };
-})();
+})(window, document);
