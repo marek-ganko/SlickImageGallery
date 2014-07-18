@@ -4,7 +4,7 @@ var app = ns('app.lazy');
 /**
  * @class app.lazy.Loader
  */
-app.lazy.Loader = function (document) {
+app.lazy.Loader = function () {
 
     var _self = this;
 

@@ -62,7 +62,7 @@ app.lazy.ContentLoader = (function (window, document) {
         };
 
         // extend
-        constr.prototype = new app.lazy.Loader(document);
+        constr.prototype = new app.lazy.Loader();
         return new constr();
     };
 })(window, document);
