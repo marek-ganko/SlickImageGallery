@@ -10,8 +10,8 @@ app.Gallery = (function (document) {
      * @constructor
      * @param {app.Image} Image
      * @param {app.stream.Adapter} Stream
-     * @param {app.lazy.ImageLoader} ImageLoader
-     * @param {app.lazy.ContentLoader} ContentLoader
+     * @param {app.lazyLoader.Image} ImageLoader
+     * @param {app.lazyLoader.Content} ContentLoader
      * @param {app.Error} Error
      */
     return function (Image, Stream, ImageLoader, ContentLoader, Error) {

@@ -1,22 +1,23 @@
 'use strict';
-var app = ns('app.lazy');
+var app = ns('app.lazyLoader');
 
 /**
- * @class app.lazy.ImageLoader
+ * @class app.lazyLoader.Image
+ * @extends app.lazyLoader.Abstract
  */
-app.lazy.ImageLoader = (function (window, document) {
+app.lazyLoader.Image = (function (window, document) {
 
     /**
      * @constructor
      */
     return function () {
-        var constructor = function () {
+        var constr = function () {
             this.threshold = 2000;
             this.delay = 100;
 
             /**
              * Adds listeners on scroll and resize actions
-             * @returns {app.lazy.ImageLoader}
+             * @returns {app.lazyLoader.Image}
              */
             this.listen = function () {
                 if (!this.isListening) {
@@ -55,7 +56,7 @@ app.lazy.ImageLoader = (function (window, document) {
         };
 
         // extend
-        constructor.prototype = new app.lazy.Loader();
-        return new constructor();
+        constr.prototype = new app.lazyLoader.Abstract();
+        return new constr();
     };
 })(window, document);

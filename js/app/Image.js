@@ -19,8 +19,8 @@ app.Image = (function (document) {
          * Initialize Image object
          */
         this.init = function () {
-            ImagePreview.init();
             this.createContainer();
+            ImagePreview.init(this.container);
         };
 
         /**
@@ -29,8 +29,6 @@ app.Image = (function (document) {
         this.createContainer = function () {
             this.container = document.createElement('div');
             this.container.setAttribute('id', 'Images');
-            // #Images #Preview
-            this.container.appendChild(ImagePreview.container);
         };
 
         /**
@@ -41,7 +39,7 @@ app.Image = (function (document) {
         this.createList = function (images, callback) {
             for (var i in images) {
                 // #Images .imgContainer
-                this.container.appendChild(this.create(images[i]));
+                this.container.appendChild(this.create(images[i], i));
             }
             callback(null);
         };
@@ -49,9 +47,10 @@ app.Image = (function (document) {
         /**
          * Returns DOM element containing container and image
          * @param {Object} image
+         * @param {Number} index
          * @returns {HTMLElement}
          */
-        this.create = function (image) {
+        this.create = function (image, index) {
             var imageContainer = document.createElement('div'),
                 link = document.createElement('a'),
                 imageElement = new Image(),

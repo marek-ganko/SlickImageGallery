@@ -8,8 +8,9 @@ app.stream.Ajax = (function(){
 
     /**
      * @constructor
+     * @param {jQuery} jQuery
      */
-    return function() {
+    return function(jQuery) {
 
         /**
          * Ajax call

@@ -1,10 +1,10 @@
 'use strict';
-var app = ns('app.lazy');
+var app = ns('app.lazyLoader');
 
 /**
- * @class app.lazy.Loader
+ * @class app.lazyLoader.Abstract
  */
-app.lazy.Loader = function () {
+app.lazyLoader.Abstract = function () {
 
     var _self = this;
 

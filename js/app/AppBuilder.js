@@ -43,8 +43,37 @@ var app = {
         return bytes ? (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i] : '0 Byte';
     },
 
-    isMobile: 'ontouchstart' in window
+    /**
+     * @type {Boolean}
+     */
+    isMobile: 'ontouchstart' in window,
 
+    /**
+     * @param {HTMLElement} element
+     * @param {String} className
+     * @returns {Boolean}
+     */
+    hasClass: function (element, className) {
+        return element && new RegExp('(\\s|^)' + className + '(\\s|$)').test(element.getAttribute('class'));
+    },
+
+    /**
+     * @param {HTMLElement} element
+     * @param {String} className
+     * @returns {HTMLElement}
+     */
+    removeClass: function (element, className) {
+        return app.hasClass(element, className) && element.setAttribute('class', element.getAttribute('class').replace(RegExp('(\\s|^)' + className + '(\\s|$)'), ' ').trim());
+    },
+
+    /**
+     * @param {HTMLElement} element
+     * @param {String} className
+     * @returns {HTMLElement}
+     */
+    addClass: function (element, className) {
+        return element && !app.hasClass(element, className) && element.setAttribute('class', ((element.getAttribute('class') || '') + ' ' + className).trim());
+    }
 };
 
 
@@ -61,57 +90,77 @@ var AppBuilder = (function () {
 
     /**
      * @constructor
+     * @param {jQuery} jQuery
      */
-    return function () {
+    return function (jQuery) {
 
         /**
-         * @returns {app.lazy.ImageLoader}
+         * @returns {app.lazyLoader.Image}
          */
         this.getImageLoader = function () {
-            return new app.lazy.ImageLoader();
+            return new app.lazyLoader.Image();
         };
+
         /**
-         * @returns {app.lazy.ContentLoader}
+         * @returns {app.lazyLoader.Content}
          */
         this.getContentLoader = function () {
-            return new app.lazy.ContentLoader();
+            return new app.lazyLoader.Content();
         };
+
         /**
          * @returns {app.Error}
          */
         this.getError = function () {
             return new app.Error();
         };
+
         /**
          * @returns {app.Gallery}
          */
         this.getGallery = function () {
             return new app.Gallery(this.getImage(), this.getStreamAdapter(), this.getImageLoader(), this.getContentLoader(), this.getError());
         };
+
+        /**
+         * @returns {app.preview.Swipe}
+         */
+        this.getSwipe = function () {
+            return new app.preview.Swipe(jQuery);
+        };
+
         /**
          * @returns {app.ImagePreview}
          */
         this.getImagePreview = function () {
-            return new app.ImagePreview(jQuery);
+            if (app.isMobile) {
+                return new app.preview.Mobile(jQuery, this.getSwipe());
+            } else {
+                return new app.preview.Standard();
+            }
         };
+
         /**
          * @returns {app.Image}
          */
         this.getImage = function () {
             return new app.Image(this.getImagePreview());
         };
+
         /**
          * @returns {app.stream.Adapter}
          */
         this.getStreamAdapter = function () {
             return new app.stream.Adapter(this.getMediaWikiClient());
         };
+
         /**
          * @returns {app.stream.Ajax}
          */
         this.getAjax = function () {
-            return new app.stream.Ajax();
+            return new app.stream.Ajax(jQuery);
         };
+
         /**
          * @returns {app.stream.MediaWikiClient}
          */

@@ -122,7 +122,7 @@ app.stream.MediaWikiClient = (function (screen) {
             };
 
             /**
-             *
+             * Shrinks image to given size proportionally by width
              * @param {Object} image
              * @param maxWidth
              * @returns {*|string|url|.ajaxSettings.url|.ajaxSettings.flatOptions.url|XML}
@@ -134,6 +134,7 @@ app.stream.MediaWikiClient = (function (screen) {
             };
         };
 
+        // extend
         constructor.prototype = new app.stream.Abstract();
         return new constructor(Ajax);
     };

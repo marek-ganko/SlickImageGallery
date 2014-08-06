@@ -1,11 +1,11 @@
 'use strict';
-var app = ns('app.lazy');
+var app = ns('app.lazyLoader');
 
 /**
- * @extends app.lazy.Loader
- * @class app.lazy.ContentLoader
+ * @class app.lazyLoader.Content
+ * @extends app.lazyLoader.Abstract
  */
-app.lazy.ContentLoader = (function (window, document) {
+app.lazyLoader.Content = (function (window, document) {
 
     /**
      * @constructor
@@ -20,7 +20,7 @@ app.lazy.ContentLoader = (function (window, document) {
             /**
              * Sets tracking DOM element for load action
              * @param {HTMLElement} element
-             * @returns {app.lazy.ContentLoader}
+             * @returns {app.lazyLoader.Content}
              */
             this.setElementToTracking = function (element) {
                 this.trackingElement = element;
@@ -30,7 +30,7 @@ app.lazy.ContentLoader = (function (window, document) {
             /**
              * Sets callback for load action
              * @param {Callback} callback
-             * @returns {app.lazy.ContentLoader}
+             * @returns {app.lazyLoader.Content}
              */
             this.setCallback = function (callback) {
                 this.callback = callback;
@@ -39,7 +39,7 @@ app.lazy.ContentLoader = (function (window, document) {
 
             /**
              * Adds listeners on scroll and resize actions
-             * @returns {app.lazy.ContentLoader}
+             * @returns {app.lazyLoader.Content}
              */
             this.listen = function () {
                 if (!this.isListening) {
@@ -62,7 +62,7 @@ app.lazy.ContentLoader = (function (window, document) {
         };
 
         // extend
-        constr.prototype = new app.lazy.Loader();
+        constr.prototype = new app.lazyLoader.Abstract();
         return new constr();
     };
 })(window, document);
